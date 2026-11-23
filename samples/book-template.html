@@ -1,0 +1,79 @@
+<title>דספינה בספר המאויר</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300;400;500&family=Assistant:wght@300;400;600&display=swap">
+<style>
+/* פריסה: כפולת עמודים של ספר. עמוד ימין טקסט, עמוד שמאל תמונה, שוליים רחבים ושדרה באמצע. עולם אחד בהיר, בכוונה */
+:root{color-scheme:light;
+  --desk:#E9E7E2; --page:#FBFAF7; --ink:#2E2E2B; --ink2:#77746C; --marker:#F3E3A2; --sea:#3D6E8C; --sand:#B78A4E;
+  --display:'Frank Ruhl Libre',Georgia,serif; --body:'Assistant','Segoe UI',Arial,sans-serif}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--desk);color:var(--ink);font-family:var(--body);direction:rtl;margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 40px}
+.wrap{max-width:1500px;margin-inline:auto;display:flex;flex-direction:column;gap:18px}
+.top{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px;color:var(--ink2);font-size:14px}
+.top b{color:var(--ink);font-weight:600}
+.spread{display:grid;grid-template-columns:1fr 1fr;background:var(--page);border-radius:3px;
+  box-shadow:0 30px 60px rgba(40,36,28,.18),0 2px 6px rgba(40,36,28,.12);position:relative;overflow:hidden}
+.spread::after{content:"";position:absolute;top:0;bottom:0;left:50%;width:70px;transform:translateX(-50%);pointer-events:none;
+  background:linear-gradient(to right,rgba(0,0,0,0),rgba(60,50,35,.10) 45%,rgba(60,50,35,.16) 50%,rgba(60,50,35,.10) 55%,rgba(0,0,0,0))}
+.page{padding:clamp(28px,4.5vw,72px) clamp(24px,4.5vw,76px);min-width:0;display:flex;flex-direction:column}
+.text{gap:20px}
+.folio{display:flex;justify-content:space-between;font-size:12.5px;letter-spacing:.06em;color:var(--ink2)}
+.text h1{font-family:var(--display);font-weight:300;font-size:clamp(48px,6vw,92px);line-height:1;margin:clamp(10px,3vh,40px) 0 0}
+.distil{font-family:var(--display);font-weight:300;font-size:clamp(20px,1.9vw,28px);line-height:1.35;margin:0}
+.distil mark{background:var(--marker);color:inherit;padding:0 .12em}
+.story{font-family:var(--display);font-size:clamp(16px,1.2vw,19px);line-height:1.75;margin:0;max-width:34em}
+.haiku{margin:4px 0 0;padding:16px 0 0;font-family:var(--display);font-weight:300;font-size:clamp(17px,1.3vw,21px);line-height:1.7;color:var(--sea);
+  box-shadow:0 -1px 0 rgba(0,0,0,.08)}
+.haiku small{display:block;font-family:var(--body);font-size:12px;color:var(--ink2);letter-spacing:.04em;margin-bottom:4px}
+.foot{margin-top:auto;padding-top:22px;font-size:12px;line-height:1.6;color:var(--ink2)}
+.foot b{color:var(--ink);font-weight:600}
+.foot p{margin:0 0 6px}
+.image{gap:14px;justify-content:center}
+.image figure{margin:0}
+.image img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;background:#ddd;box-shadow:0 1px 0 rgba(0,0,0,.06)}
+.image figcaption{font-size:12.5px;color:var(--ink2);margin-top:10px;display:flex;justify-content:space-between;gap:12px}
+.after{background:var(--page);border-radius:3px;padding:18px 22px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:18px;font-size:14px}
+.after h2{grid-column:1/-1;margin:0;font-family:var(--display);font-weight:400;font-size:22px}
+.after h3{margin:0 0 6px;font-size:14px;font-weight:600}
+.after p{margin:0;color:var(--ink2);line-height:1.6}
+.alt{display:flex;gap:12px;align-items:center}
+.alt img{width:88px;height:88px;object-fit:cover;border-radius:2px;flex:none}
+.ok{color:#3E7B55}.bad{color:#B04A3F}
+@media (max-width:900px){
+  .spread{grid-template-columns:1fr}
+  .spread::after{display:none}
+  .image{order:-1}
+}
+</style>
+<div class="wrap">
+  <div class="top"><b>דוגמה לספר המאויר</b><span>עיר אחת, תמונה אחת, כפולת עמודים אחת. האפליקציה עצמה לא השתנתה.</span></div>
+  <article class="spread" aria-label="כפולת עמודים: דספינה">
+    <section class="page text">
+      <div class="folio"><span>ערים והתשוקה · 3</span><span>עמ' 34</span></div>
+      <h1>דספינה</h1>
+      <p class="distil"><mark>כל עיר מקבלת צורה מהמדבר שמולו היא עומדת.</mark></p>
+      <p class="story">על הגבול בין המדבר לים עומדת עיר שאין לה צורה אחת. מי שמגיע אליה בספינה רואה גמל: חצרות מרוצפות, דקלים ונחת של שיירה שהגיעה. מי שמגיע על גמל רואה ספינה: מגדלים, אנטנות וארובות שמחכות להפליג. כל מבקר רואה בדספינה את מה שחסר לו.</p>
+      <p class="haiku"><small>הייקו</small>ספינה רואה גמל<br>גמל רואה ספינה<br>העיר: מה שחסר</p>
+      <div class="foot">
+        <p><b>על ההמחשה.</b> ההחלטה שעיצבה את התמונה: המתח, ים מול מדבר, נכתב ראשון, וממנו נגזרו האור והפלטה. האור נופל על הים, והגבול בין הים למדבר עובר על קו השליש.</p>
+        <p><b>על הטקסט.</b> הפסקה היא סיכום שלנו מתוך הקובץ, לא ציטוט מהספר. ההייקו נכתב לדוגמה הזו.</p>
+      </div>
+    </section>
+    <section class="page image">
+      <div class="folio"><span>עמ' 35</span><span>איור</span></div>
+      <figure>
+        <img src="__MAIN__" alt="דספינה: עיר על קו המגע בין ים למדבר, מבט מסיפון ספינה בשעת זהב">
+        <figcaption><span>דספינה, מבט מהים בשעת זהב</span><span>__MAINLABEL__</span></figcaption>
+      </figure>
+    </section>
+  </article>
+  <section class="after">
+    <h2>מה הדוגמה הזו מלמדת</h2>
+    <div class="alt"><img src="__ALT__" alt="התמונה השנייה לאותה עיר"><p><b>__ALTLABEL__.</b> נוצרה מאותה גרסה, כדי להשוות. __ALTNOTE__</p></div>
+    <div><h3 class="ok">מה עובד</h3><p>__WORKS__</p></div>
+    <div><h3 class="bad">מה עוד לא</h3><p>__NOTYET__</p></div>
+    <div><h3>אם הכיוון ייבחר, באפליקציה ישתנו שלושה דברים</h3><p>1. גלריה של 42 כפולות במקום האטלס. 2. כפתור "התמונה לספר" שבוחר בין לפני לאחרי. 3. מצב קריאה, שבו מדפדפים בין הכפולות כמו בספר.</p></div>
+  </section>
+</div>
