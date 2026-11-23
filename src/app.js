@@ -9,7 +9,7 @@ var MJ = 'Documentary realism, Professional architecture photography, 1:1 --ar 1
 var OTHER = 'Documentary realism, Professional architecture photography, 1:1, ללא טקסט, ללא כיתוב, ללא חלוקת מסגרות';
 
 function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
-var state = { tool: store('arim.tool') || 'mj', variant: 0, hybrid: '' };
+var state = { tool: store('arim.tool') || 'mj', variant: 0, hybrid: '', after: false, hoverSlot: null };
 
 /* ---------- מוטיבים גרפיים: כל עיר מצוירת מהנתונים שלה ---------- */
 function rng(seed) { var s = 0; for (var i = 0; i < seed.length; i++) s = (s * 31 + seed.charCodeAt(i)) >>> 0; return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
@@ -83,9 +83,17 @@ function variantLabel(comp) {
   if (/רחב|מהצד|אופקי/.test(comp)) return 'מבט רחב';
   return 'גובה העיניים';
 }
-function layersOf(c, v, other) {
-  var src = other || c;
-  return { t: c.t, p: src.p, mt: src.mt, L: c.v[v][0], C: c.v[v][1], pl: src.pl };
+function poles(t) { var i = t.indexOf(' מול '); if (i < 0) return [t, 'הרקע']; return [t.slice(0, i), t.slice(i + 5).split(',')[0]]; }
+// "אחרי": המתח נכתב לפני הפלטה, והאור והצבע נגזרים ממנו (המראה מהבנייה הראשונה)
+function layersOf(c, v, other, after) {
+  var src = other || c, L = { t: c.t, p: src.p, mt: src.mt, L: c.v[v][0], C: c.v[v][1], pl: src.pl };
+  if (!after) return L;
+  var P2 = poles(c.t), A = P2[0], B = P2[1];
+  L.t = 'ניגוד אחד מחזיק את כל התמונה: ' + A + ' מול ' + B;
+  L.L = c.v[v][0] + ', האור נופל במלואו על ' + A + ' ומשאיר את ' + B + ' בצל';
+  L.C = c.v[v][1] + ', הגבול בין ' + A + ' לבין ' + B + ' עובר על קו השליש והוא המוקד';
+  L.pl = 'פלטה שנגזרת מהמתח: ' + A + ' בגוונים חמים ורוויים, ' + B + ' בגוונים קרים ודהויים, בלי צבע שלישי';
+  return L;
 }
 function promptText(L, tool) {
   return [L.t, L.p, L.mt, L.L, L.C, L.pl].join(', ') + ', ' + (tool === 'mj' ? MJ : OTHER);
@@ -158,6 +166,12 @@ function renderAtlas(filter) {
 }
 
 /* ---------- דף עיר ---------- */
+var SLOT_NAME = { before: 'לפני', after: 'אחרי' };
+function fid(c, v, slot) { return c.id + '-' + v + '-' + slot; }
+function plateArt(c) {
+  var v = state.variant, url = FR[fid(c, v, 'after')] || FR[fid(c, v, 'before')];
+  return url ? '<img src="' + esc(url) + '" alt="' + esc(c.n) + ', ההמחשה שנוצרה">' : emblem(c, { tag: 'p', wide: true });
+}
 function renderCity(c) {
   setNav('');
   var cat = CATS[c.k], prev = CITIES[(c.idx + CITIES.length - 1) % CITIES.length], next = CITIES[(c.idx + 1) % CITIES.length];
@@ -167,15 +181,29 @@ function renderCity(c) {
     return nums.map(function (n) { return '<abbr title="' + esc(SOURCES[n] || '') + '">' + n + '</abbr>'; }).join(' ');
   }).join(' ');
   var opts = '<option value="">בחרי עיר להכלאה</option>' + CITIES.filter(function (o) { return o !== c; }).map(function (o) { return '<option value="' + o.id + '"' + (state.hybrid === o.id ? ' selected' : '') + '>' + esc(o.n) + '</option>'; }).join('');
+  var slotHtml = function (slot) {
+    return '<div class="slot" data-slot="' + slot + '"><div class="drop" tabindex="0" role="button" aria-label="העלאת תמונת ' + SLOT_NAME[slot] + '"></div>' +
+      '<div class="slot-bar"><b class="slot-name s-' + slot + '">' + SLOT_NAME[slot] + '</b><span class="slot-sub">' + (slot === 'before' ? 'הפלטה כאווירה' : 'המתח קובע אור ופלטה') + '</span>' +
+      '<button class="btn sm" data-copyslot="' + slot + '">העתקת הפרומפט</button><button class="btn sm" data-pick="' + slot + '">בחירת קובץ</button></div></div>';
+  };
   view.innerHTML = '<div class="page"><div class="city">' +
-    '<figure class="plate" style="margin:0">' + emblem(c, { tag: 'p', wide: true }) + '<figcaption class="cap"><div class="cat-tag" style="color:' + cat.c + ';filter:brightness(1.6)">' + cat.n + '</div><h2>' + esc(c.n) + '</h2><p class="ins">' + esc(c.i) + '</p><p class="uniq">' + esc(c.u) + '</p></figcaption></figure>' +
+    '<figure class="plate" style="margin:0"><div id="plateArt" class="plate-art">' + plateArt(c) + '</div><figcaption class="cap"><div class="cat-tag" style="color:' + cat.c + ';filter:brightness(1.6)">' + cat.n + '</div><h2>' + esc(c.n) + '</h2><p class="ins">' + esc(c.i) + '</p><p class="uniq">' + esc(c.u) + '</p></figcaption></figure>' +
     '<div class="lab">' +
       '<div><span class="lbl-s">זיקוק: מה התמונה צריכה להחזיק</span><p class="distil"><mark>' + esc(c.d) + '</mark></p></div>' +
       '<div><span class="lbl-s">שלוש המחשות, שונות בזווית ובאור</span><div class="tabs" id="tabs"></div></div>' +
-      '<div class="layers" id="layers"></div>' +
-      '<div class="tools"><button class="btn main" id="copyBtn">העתקת הפרומפט</button><button class="btn" id="copy3">העתקת שלושתם</button>' +
+      '<div class="tools"><span class="seg" role="group" aria-label="גרסת הפרומפט"><button data-mode="before">לפני: הפלטה כאווירה</button><button data-mode="after">אחרי: המתח קובע</button></span>' +
         '<span class="seg" role="group" aria-label="כלי יצירה"><button data-tool="mj">Midjourney</button><button data-tool="other">כלי אחר</button></span><span class="saved" id="saved"></span></div>' +
+      '<div class="layers" id="layers"></div>' +
+      '<div class="tools"><button class="btn main" id="copyBtn">העתקת הפרומפט</button><button class="btn" id="copy3">העתקת שלושתם</button></div>' +
       '<div class="promptbox" id="pbox" dir="rtl"></div>' +
+      '<section class="frames" aria-label="לפני ואחרי"><div class="fr-head"><h3>לפני ואחרי</h3><p>מדביקים כאן את התמונות שנוצרו מהפרומפט. <b>לפני</b>: הפרומפט המקורי. <b>אחרי</b>: אותו פרומפט, כשהמתח קובע את האור ואת הפלטה. כל תמונה נשמרת לגרסה שנבחרה למעלה.</p>' +
+        '<span class="seg" role="group" aria-label="תצוגת השוואה"><button data-cmp="side">זו לצד זו</button><button data-cmp="slide">החלקה</button></span></div>' +
+        '<div class="fr-grid" id="frGrid">' + slotHtml('before') + slotHtml('after') + '</div>' +
+        '<div class="fr-slide" id="frSlide" hidden><div class="cmp" id="cmp"><img id="cmpA" alt="אחרי"><div class="cmp-b" id="cmpBWrap"><img id="cmpB" alt="לפני"></div><div class="cmp-line" id="cmpLine"></div></div><input type="range" id="cmpR" min="0" max="100" value="50" aria-label="קו ההשוואה"><p class="cmp-hint"><b>ימין: לפני</b>. <b>שמאל: אחרי</b>. גוררים את הפס כדי לראות מה השתנה.</p></div>' +
+        '<div class="fr-diff"><span class="lbl-s">ההשערה: מה שינינו בפרומפט</span><ol id="diffList"></ol></div>' +
+        '<div class="fr-note"><label class="lbl-s" for="note">ההבדל בפועל: מה התמונה השנייה מספרת שהראשונה לא סיפרה?</label><div class="note-row"><textarea id="note" rows="3" placeholder="למשל: באחרי העין הולכת ישר לקו שבין הים למדבר, ובלפני היא משוטטת בין הכיפות."></textarea><button class="btn mic" id="mic" title="הקלטה ותמלול" aria-label="הקלטה ותמלול"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button></div><span class="saved" id="noteSaved"></span></div>' +
+        '<input type="file" id="fileIn" accept="image/*" hidden>' +
+      '</section>' +
       '<div class="hybrid"><p><b>הכלאה:</b> המתח, האור והמבט של <b>' + esc(c.n) + '</b>, בתוך המקום, החומר והפלטה של עיר אחרת. כך קאלווינו בנה את כולן מונציה.</p><select id="hy" aria-label="עיר להכלאה">' + opts + '</select></div>' +
       '<div class="facts"><p><span class="lbl-s">תיאור פיזי בספר</span>' + esc(c.ph) + '</p><p><span class="lbl-s">משמעות מטפורית (הערכה, לא ציטוט)</span>' + esc(c.me) + '</p><p class="src"><span class="lbl-s">מקורות בקובץ, ריחוף מציג את שם המקור</span>' + srcHtml + '</p></div>' +
     '</div></div></div>' +
@@ -183,34 +211,145 @@ function renderCity(c) {
 
   var tabs = document.getElementById('tabs');
   tabs.innerHTML = c.v.map(function (v, i) { return '<button class="tab" data-v="' + i + '"><b>' + ['א', 'ב', 'ג'][i] + '. ' + variantLabel(v[1]) + '</b><small>' + esc(v[0]) + '</small></button>'; }).join('');
-  var last = null;
+  var last = null, cmpMode = 'side';
+  function other() { var o = state.hybrid ? CITIES.filter(function (x) { return x.id === state.hybrid; })[0] : null; return o === c ? null : o; }
+  function drawFrames() {
+    ['before', 'after'].forEach(function (slot) {
+      var url = FR[fid(c, state.variant, slot)], d = document.querySelector('.slot[data-slot="' + slot + '"] .drop');
+      d.innerHTML = url ? '<img src="' + esc(url) + '" alt="תמונת ' + SLOT_NAME[slot] + ', ' + esc(c.n) + '">' :
+        '<div class="empty"><b>' + SLOT_NAME[slot] + '</b><span>גוררים לכאן תמונה, מדביקים בהקשה על Ctrl+V, או לוחצים לבחירה</span><small>גרסה ' + ['א', 'ב', 'ג'][state.variant] + ', ' + variantLabel(c.v[state.variant][1]) + '</small></div>';
+      d.classList.toggle('has', !!url);
+    });
+    var a = FR[fid(c, state.variant, 'after')], b = FR[fid(c, state.variant, 'before')];
+    var both = !!(a && b);
+    document.querySelector('[data-cmp="slide"]').disabled = !both;
+    if (!both) cmpMode = 'side';
+    document.querySelectorAll('[data-cmp]').forEach(function (x) { x.classList.toggle('on', x.dataset.cmp === cmpMode); });
+    document.getElementById('frGrid').hidden = cmpMode !== 'side';
+    document.getElementById('frSlide').hidden = cmpMode !== 'slide';
+    if (both) { document.getElementById('cmpA').src = a; document.getElementById('cmpB').src = b; }
+    var pa = document.getElementById('plateArt'); pa.innerHTML = plateArt(c);
+    var note = document.getElementById('note'); if (document.activeElement !== note) note.value = NT[c.id + '-' + state.variant] || '';
+  }
   function draw() {
-    var other = state.hybrid ? CITIES.filter(function (o) { return o.id === state.hybrid; })[0] : null;
-    if (other === c) other = null;
-    var L = layersOf(c, state.variant, other);
+    var o = other(), L = layersOf(c, state.variant, o, state.after), B = layersOf(c, state.variant, o, false), A = layersOf(c, state.variant, o, true);
     tabs.querySelectorAll('.tab').forEach(function (b) { b.classList.toggle('on', +b.dataset.v === state.variant); });
     document.querySelectorAll('[data-tool]').forEach(function (b) { b.classList.toggle('on', b.dataset.tool === state.tool); });
+    document.querySelectorAll('[data-mode]').forEach(function (b) { b.classList.toggle('on', (b.dataset.mode === 'after') === state.after); });
     document.getElementById('layers').innerHTML = LAYERS.map(function (l, i) {
-      var from = other && /^(p|mt|pl)$/.test(l[0]) ? ' <small style="color:' + CATS[other.k].c + '">מ' + esc(other.n) + '</small>' : '';
+      var from = o && /^(p|mt|pl)$/.test(l[0]) ? ' <small style="color:' + CATS[o.k].c + '">מ' + esc(o.n) + '</small>' : '';
       var changed = last && last[l[0]] !== L[l[0]];
-      return '<div class="layer' + (changed ? ' flash' : '') + '"><span class="k"><i style="background:' + LAYER_COL[i] + '">' + (i + 1) + '</i>' + l[1] + from + '</span><span class="vv">' + esc(L[l[0]]) + '</span></div>';
+      var was = state.after && B[l[0]] !== A[l[0]] ? '<small class="was">לפני: ' + esc(B[l[0]]) + '</small>' : '';
+      return '<div class="layer' + (changed ? ' flash' : '') + '"><span class="k"><i style="background:' + LAYER_COL[i] + '">' + (i + 1) + '</i>' + l[1] + from + '</span><span class="vv">' + esc(L[l[0]]) + was + '</span></div>';
     }).join('') + '<div class="layer"><span class="k"><i style="background:#2E2E2B">7</i>פרמטרים קבועים</span><span class="vv" dir="ltr" style="text-align:left;font-size:13px;color:var(--ink2)">' + esc(state.tool === 'mj' ? MJ : OTHER) + '</span></div>';
     var body = [L.t, L.p, L.mt, L.L, L.C, L.pl].join(', ');
     document.getElementById('pbox').innerHTML = esc(body) + ',<span class="par">' + esc(state.tool === 'mj' ? MJ : OTHER) + '</span>';
+    document.getElementById('diffList').innerHTML = LAYERS.filter(function (l) { return B[l[0]] !== A[l[0]]; }).map(function (l) {
+      return '<li><b>' + l[1] + '.</b> ' + ({ t: 'המתח נאמר במפורש כניגוד אחד שמחזיק את התמונה.', L: 'האור כבר לא רק שעה ביום: הוא בוחר צד במתח.', C: 'המבט ממקם את קו הגבול שבין שני הצדדים על קו השליש.', pl: 'הצבע נגזר מהמתח: צד אחד חם ורווי, הצד השני קר ודהוי.' }[l[0]] || '') + '</li>';
+    }).join('');
     last = L;
+    drawFrames();
   }
   draw();
   tabs.onclick = function (e) { var b = e.target.closest('.tab'); if (!b) return; state.variant = +b.dataset.v; draw(); };
-  document.querySelectorAll('[data-tool]').forEach(function (b) { b.onclick = function () { state.tool = b.dataset.tool; store('arim.tool', state.tool); draw(); var s = document.getElementById('saved'); s.textContent = 'נשמר'; setTimeout(function () { s.textContent = ''; }, 1400); }; });
+  document.querySelectorAll('[data-mode]').forEach(function (b) { b.onclick = function () { state.after = b.dataset.mode === 'after'; draw(); }; });
+  document.querySelectorAll('[data-tool]').forEach(function (b) { b.onclick = function () { state.tool = b.dataset.tool; store('arim.tool', state.tool); draw(); flashSaved('saved'); }; });
+  document.querySelectorAll('[data-cmp]').forEach(function (b) { b.onclick = function () { if (b.disabled) return; cmpMode = b.dataset.cmp; drawFrames(); }; });
+  document.getElementById('cmpR').oninput = function (e) { var v = e.target.value; document.getElementById('cmpBWrap').style.clipPath = 'inset(0 0 0 ' + v + '%)'; document.getElementById('cmpLine').style.left = v + '%'; };
   document.getElementById('hy').onchange = function (e) { state.hybrid = e.target.value; draw(); };
-  document.getElementById('copyBtn').onclick = function () {
-    var other = state.hybrid ? CITIES.filter(function (o) { return o.id === state.hybrid; })[0] : null;
-    copy(promptText(layersOf(c, state.variant, other), state.tool), 'הפרומפט הועתק');
-  };
+  document.getElementById('copyBtn').onclick = function () { copy(promptText(layersOf(c, state.variant, other(), state.after), state.tool), 'הפרומפט של "' + (state.after ? 'אחרי' : 'לפני') + '" הועתק'); };
   document.getElementById('copy3').onclick = function () {
-    copy(c.v.map(function (v, i) { return c.n + ', גרסה ' + ['א', 'ב', 'ג'][i] + ' (' + variantLabel(v[1]) + ')\nזיקוק: ' + c.d + '\n' + promptText(layersOf(c, i), state.tool); }).join('\n\n'), 'שלושת הפרומפטים הועתקו');
+    copy(c.v.map(function (v, i) { return c.n + ', גרסה ' + ['א', 'ב', 'ג'][i] + ' (' + variantLabel(v[1]) + ')\nזיקוק: ' + c.d + '\nלפני: ' + promptText(layersOf(c, i), state.tool) + '\nאחרי: ' + promptText(layersOf(c, i, null, true), state.tool); }).join('\n\n'), 'שלוש הגרסאות, לפני ואחרי, הועתקו');
+  };
+  /* העלאה: לחיצה, הדבקה וגרירה */
+  var fileIn = document.getElementById('fileIn'), pickSlot = 'before';
+  document.querySelectorAll('[data-copyslot]').forEach(function (b) { b.onclick = function () { var af = b.dataset.copyslot === 'after'; copy(promptText(layersOf(c, state.variant, other(), af), state.tool), 'הפרומפט של "' + SLOT_NAME[b.dataset.copyslot] + '" הועתק'); }; });
+  document.querySelectorAll('[data-pick]').forEach(function (b) { b.onclick = function () { pickSlot = b.dataset.pick; fileIn.click(); }; });
+  document.querySelectorAll('.slot').forEach(function (s) {
+    var d = s.querySelector('.drop'), slot = s.dataset.slot;
+    d.onclick = function () { pickSlot = slot; fileIn.click(); };
+    d.onkeydown = function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickSlot = slot; fileIn.click(); } };
+    d.onmouseenter = d.onfocus = function () { state.hoverSlot = slot; };
+    d.onmouseleave = function () { state.hoverSlot = null; };
+    d.ondragover = function (e) { e.preventDefault(); d.classList.add('over'); };
+    d.ondragleave = function () { d.classList.remove('over'); };
+    d.ondrop = function (e) { e.preventDefault(); d.classList.remove('over'); var f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f) put(slot, f); else { var u = e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain'); if (/^https?:\/\//.test(u)) putUrl(slot, u.trim()); } };
+  });
+  fileIn.onchange = function () { if (fileIn.files[0]) put(pickSlot, fileIn.files[0]); fileIn.value = ''; };
+  document.onpaste = function (e) {
+    if (!document.getElementById('frGrid') || /TEXTAREA|INPUT/.test(document.activeElement.tagName)) return;
+    var slot = state.hoverSlot || (state.after ? 'after' : 'before');
+    var items = (e.clipboardData && e.clipboardData.items) || [];
+    for (var i = 0; i < items.length; i++) if (items[i].type.indexOf('image') === 0) { e.preventDefault(); put(slot, items[i].getAsFile()); return; }
+    var t = e.clipboardData && e.clipboardData.getData('text'); if (t && /^https?:\/\/\S+$/.test(t.trim())) { e.preventDefault(); putUrl(slot, t.trim()); }
+  };
+  function put(slot, file) {
+    if (!/^image\//.test(file.type)) { toast('זה לא קובץ תמונה. אפשר PNG, JPG או WEBP.'); return; }
+    var id = fid(c, state.variant, slot), d = document.querySelector('.slot[data-slot="' + slot + '"] .drop');
+    d.classList.add('busy'); toast('שומר את התמונה...');
+    saveImage(c, state.variant, slot, file).then(function (where) { d.classList.remove('busy'); drawFrames(); toast(where === 'cloud' ? 'התמונה נשמרה בענן' : 'התמונה נשמרה במכשיר הזה בלבד'); }, function (err) { d.classList.remove('busy'); toast('השמירה נכשלה: ' + err + '. נסי קובץ קטן יותר.'); });
+  }
+  function putUrl(slot, url) {
+    var id = fid(c, state.variant, slot);
+    fetch(url).then(function (r) { if (!r.ok) throw r.status; return r.blob(); }).then(function (b) {
+      if (!/^image\//.test(b.type)) throw 'type';
+      put(slot, new File([b], 'pasted.jpg', { type: b.type }));
+    }).catch(function () { FR[id] = url; localSet('f.' + id, url); drawFrames(); toast('האתר חוסם הורדה, ולכן הקישור נשמר במכשיר הזה בלבד. לשמירה בענן, הורידי את התמונה וגררי אותה.'); });
+  }
+  var note = document.getElementById('note'), nt;
+  note.oninput = function () { NT[c.id + '-' + state.variant] = note.value; clearTimeout(nt); document.getElementById('noteSaved').textContent = 'שומר...'; nt = setTimeout(function () { saveNote(c, state.variant, note.value).then(function (w) { document.getElementById('noteSaved').textContent = w === 'cloud' ? 'נשמר' : 'נשמר במכשיר הזה'; }); }, 700); };
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition, mic = document.getElementById('mic');
+  if (!SR) mic.hidden = true; else mic.onclick = function () {
+    var r = new SR(); r.lang = 'he-IL'; r.interimResults = false; mic.classList.add('on'); toast('מקשיב. דברי, והטקסט ייכנס לשדה.');
+    r.onresult = function (e) { note.value = (note.value ? note.value + ' ' : '') + e.results[0][0].transcript; note.oninput(); };
+    r.onend = function () { mic.classList.remove('on'); }; r.onerror = function () { mic.classList.remove('on'); toast('ההקלטה לא זמינה כאן. אפשר להקליד.'); };
+    try { r.start(); } catch (e) { mic.classList.remove('on'); }
   };
 }
+function flashSaved(id) { var s = document.getElementById(id); if (!s) return; s.textContent = 'נשמר'; setTimeout(function () { s.textContent = ''; }, 1400); }
+
+/* ---------- שמירה: Supabase, ובמקרה של חסימה, במכשיר ---------- */
+var SB = 'https://ktqmwpbzcnzkhjskqisy.supabase.co';
+var SBK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0cW13cGJ6Y256a2hqc2txaXN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAxODM4OTgsImV4cCI6MjEwNTc1OTg5OH0.uPKn4hrLk16jhDoajMjPl4OmV5j1b3bMIECVmOdhWGI';
+var FR = {}, NT = {};
+function hdr(extra) { var h = { apikey: SBK, Authorization: 'Bearer ' + SBK }; for (var k in extra) h[k] = extra[k]; return h; }
+function localSet(k, v) { try { localStorage.setItem('arim.' + k, v); return true; } catch (e) { return false; } }
+function loadLocal() { try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k.indexOf('arim.f.') === 0) FR[k.slice(7)] = FR[k.slice(7)] || localStorage.getItem(k); if (k.indexOf('arim.n.') === 0) NT[k.slice(7)] = NT[k.slice(7)] || localStorage.getItem(k); } } catch (e) {} }
+function loadAll() {
+  loadLocal();
+  return Promise.all([
+    fetch(SB + '/rest/v1/arim_frames?select=id,image_url', { headers: hdr() }).then(function (r) { return r.ok ? r.json() : []; }),
+    fetch(SB + '/rest/v1/arim_notes?select=id,note', { headers: hdr() }).then(function (r) { return r.ok ? r.json() : []; })
+  ]).then(function (res) { res[0].forEach(function (x) { if (x.image_url) FR[x.id] = x.image_url; }); res[1].forEach(function (x) { NT[x.id] = x.note; }); return true; }, function () { return false; });
+}
+function shrink(file) {
+  return new Promise(function (ok) {
+    var img = new Image(), u = URL.createObjectURL(file);
+    img.onload = function () { var m = 1600, s = Math.min(1, m / Math.max(img.width, img.height)), cv = document.createElement('canvas'); cv.width = Math.round(img.width * s); cv.height = Math.round(img.height * s); cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height); URL.revokeObjectURL(u); cv.toBlob(function (b) { ok(b || file); }, 'image/jpeg', 0.88); };
+    img.onerror = function () { ok(file); };
+    img.src = u;
+  });
+}
+function saveRow(c, v, slot, url) {
+  return fetch(SB + '/rest/v1/arim_frames', { method: 'POST', headers: hdr({ 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates' }), body: JSON.stringify({ id: fid(c, v, slot), city: c.id, variant: v, slot: slot, image_url: url, updated_at: new Date().toISOString() }) }).then(function (r) { if (!r.ok) throw r.status; });
+}
+function saveImage(c, v, slot, file) {
+  var id = fid(c, v, slot);
+  return shrink(file).then(function (blob) {
+    var path = c.id + '/' + v + '-' + slot + '-' + Date.now() + '.jpg';
+    return fetch(SB + '/storage/v1/object/arim-media/' + path, { method: 'POST', headers: hdr({ 'Content-Type': 'image/jpeg', 'x-upsert': 'true' }), body: blob })
+      .then(function (r) { if (!r.ok) throw r.status; var url = SB + '/storage/v1/object/public/arim-media/' + path; return saveRow(c, v, slot, url).then(function () { FR[id] = url; return 'cloud'; }); })
+      .catch(function () {
+        return new Promise(function (ok, bad) { var fr = new FileReader(); fr.onload = function () { FR[id] = fr.result; if (localSet('f.' + id, fr.result)) ok('local'); else bad('אין מקום במכשיר'); }; fr.onerror = function () { bad('הקובץ לא נקרא'); }; fr.readAsDataURL(blob); });
+      });
+  });
+}
+function saveNote(c, v, text) {
+  var id = c.id + '-' + v;
+  return fetch(SB + '/rest/v1/arim_notes', { method: 'POST', headers: hdr({ 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates' }), body: JSON.stringify({ id: id, city: c.id, variant: v, note: text, updated_at: new Date().toISOString() }) })
+    .then(function (r) { if (!r.ok) throw r.status; return 'cloud'; }).catch(function () { localSet('n.' + id, text); return 'local'; });
+}
+function cityThumb(c) { for (var v = 0; v < 3; v++) { var u = FR[fid(c, v, 'after')] || FR[fid(c, v, 'before')]; if (u) return '<img src="' + esc(u) + '" alt="">'; } return emblem(c, { tag: 'a' }); }
 
 /* ---------- מקרא ---------- */
 function renderLegend() {
@@ -218,6 +357,7 @@ function renderLegend() {
   view.innerHTML = '<div class="page"><div class="lead"><h2>מקרא ושיטה</h2><p>איך נבנה כל פרומפט, ומה מסמן כל צבע.</p></div><div class="legend-page">' +
     '<section><h3>חמש השכבות</h3><ol>' + LAYERS.map(function (l, i) { return '<li><b style="color:' + LAYER_COL[i] + '">' + l[1] + '</b>' + ['. ניגוד אחד שמחזיק את התמונה.', '. סוג המרחב וקנה המידה, מהתיאור הפיזי בספר.', '. חומר מוביל אחד ומצבו.', '. מקור האור, הכיוון והשעה. האור הוא גיבור.', '. זווית, מוקד אחד, וחוק קומפוזיציה.', '. צבעים ומצב רוח.'][i] + '</li>'; }).join('') + '</ol></section>' +
     '<section><h3>שלוש גרסאות לכל עיר</h3><p>כל גרסה שונה <b>בזווית</b> וב<b>אור</b>: רגע של סף בגובה העיניים, מבט רחב על העיר כמבנה, ותקריב שבו החומר מספר את הרעיון. <b>המתח</b> נשאר זהה, כדי שהשלוש יספרו את אותו רעיון.</p><p><b>Midjourney</b>: הפרמטרים עם שני מקפים בסוף. <b>כלי אחר</b>: בלי מקפים, ובמקומם "ללא טקסט, ללא כיתוב, ללא חלוקת מסגרות".</p></section>' +
+    '<section><h3>לפני ואחרי</h3><p><b>לפני:</b> הפרומפט המקורי, שבו הפלטה היא אווירה.</p><p><b>אחרי:</b> אותו פרומפט, כשהמתח נכתב ראשון. <b>האור</b> נופל על צד אחד של המתח, <b>המבט</b> מציב את הגבול בין הצדדים על קו השליש, ו<b>הפלטה</b> נגזרת מהמתח: צד חם וצד קר.</p><p>מדביקים את שתי התמונות במסגרות, ומשווים: <mark>ההשערה</mark> היא מה שינינו בפרומפט, <mark>ההבדל בפועל</mark> הוא מה שהתמונה עשתה עם זה.</p></section>' +
     '<section><h3>הקבוצות בספר</h3><p>' + ORDER.map(function (k) { return '<span style="white-space:nowrap"><i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:' + CATS[k].c + '"></i> ' + CATS[k].n + '</span>'; }).join(' &nbsp; ') + '</p><p>הסיווג נלקח מהקובץ. ערים עם סיווג כפול שויכו לקבוצה הראשונה.</p></section>' +
     '<section><h3>עובדה, הערכה והנחה</h3><p><b>עובדה:</b> שם העיר, הייחודיות, התיאור הפיזי והמקורות, כפי שהם בקובץ.</p><p><b>הערכה:</b> התובנה והמשמעות המטפורית, פרשנות שנאספה בקובץ.</p><p><b>הנחה:</b> הזיקוק, האור והמבט בפרומפטים. אלה החלטות המחשה, לא ציטוט מהספר.</p></section>' +
     '</div></div>';
@@ -252,11 +392,12 @@ document.addEventListener('keydown', function (e) {
   }
 });
 function act(a) {
-  if (a === 'copyall') copy(CITIES.map(function (c) { return '## ' + c.n + ' (' + CATS[c.k].n + ')\nזיקוק: ' + c.d + '\n' + c.v.map(function (v, i) { return ['א', 'ב', 'ג'][i] + '. ' + promptText(layersOf(c, i), state.tool); }).join('\n'); }).join('\n\n'), 'כל 126 הפרומפטים הועתקו');
+  if (a === 'copyall') copy(CITIES.map(function (c) { return '## ' + c.n + ' (' + CATS[c.k].n + ')\nזיקוק: ' + c.d + '\n' + c.v.map(function (v, i) { return ['א', 'ב', 'ג'][i] + ' לפני. ' + promptText(layersOf(c, i), state.tool) + '\n' + ['א', 'ב', 'ג'][i] + ' אחרי. ' + promptText(layersOf(c, i, null, true), state.tool); }).join('\n'); }).join('\n\n'), 'כל 252 הפרומפטים הועתקו');
   if (a === 'random') location.hash = CITIES[Math.floor(Math.random() * CITIES.length)].id;
   if (a === 'legend') location.hash = 'legend';
   if (a === 'theme') { var r = document.documentElement, dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; r.dataset.theme = dark ? 'light' : 'dark'; store('arim.theme', r.dataset.theme); }
 }
 var th = store('arim.theme'); if (th) document.documentElement.dataset.theme = th;
 route();
+loadAll().then(function () { var h = (location.hash || '').slice(1); if (h === 'atlas' || /^c\d+$/.test(h)) { var y = window.scrollY; var keep = state.variant; route(); state.variant = keep; window.scrollTo(0, y); } });
 })();

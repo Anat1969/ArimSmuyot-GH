@@ -128,6 +128,45 @@ mark{background:var(--marker);color:inherit;padding:0 .15em}
 .pager{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:max(16px,env(safe-area-inset-left,0px));z-index:15;display:flex;gap:8px}
 .pager .btn{width:150px;background:var(--bg);box-shadow:0 2px 10px var(--shade),0 0 0 1px var(--line);text-align:center;overflow:hidden;text-overflow:ellipsis}
 
+
+/* לפני ואחרי */
+.plate-art{position:absolute;inset:0}
+.plate-art img{width:100%;height:100%;object-fit:cover;display:block}
+.city-row .em img{width:100%;height:100%;object-fit:cover;display:block}
+.layer .was{display:block;font-size:12.5px;color:var(--ink2);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--ink2) 45%,transparent);margin-top:2px}
+.frames{background:var(--paper);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:14px}
+.fr-head{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center}
+.fr-head h3{margin:0;font-family:var(--display);font-weight:400;font-size:22px}
+.fr-head p{margin:0;flex:1 1 320px;font-size:14px;color:var(--ink2)}
+.fr-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.slot{min-width:0;display:flex;flex-direction:column;gap:8px}
+.drop{aspect-ratio:1/1;width:100%;border-radius:4px;background:var(--bg);box-shadow:inset 0 0 0 1px var(--line);display:grid;place-items:center;cursor:pointer;overflow:hidden;transition:box-shadow .2s,background .2s}
+.drop:hover,.drop.over{box-shadow:inset 0 0 0 2px var(--ink2);background:color-mix(in srgb,var(--paper) 50%,var(--bg))}
+.drop.busy{opacity:.55}
+.drop img{width:100%;height:100%;object-fit:contain;display:block;background:var(--night)}
+.drop .empty{text-align:center;padding:18px;display:flex;flex-direction:column;gap:6px;color:var(--ink2);font-size:14px}
+.drop .empty b{font-family:var(--display);font-weight:300;font-size:34px;color:var(--ink)}
+.drop .empty small{font-size:12px}
+.slot-bar{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.slot-name{font-size:15px;padding:0 8px;border-radius:3px;color:#fff}
+.s-before{background:#6E6C78}.s-after{background:#C0564C}
+.slot-sub{font-size:13px;color:var(--ink2);flex:1 1 auto}
+.btn.sm{min-height:30px;padding:0 10px;font-size:13px;background:var(--bg)}
+.seg button[disabled]{opacity:.4;cursor:not-allowed}
+.fr-slide{display:flex;flex-direction:column;gap:8px}
+.cmp{position:relative;aspect-ratio:1/1;width:min(100%,640px);margin-inline:auto;border-radius:4px;overflow:hidden;background:var(--night)}
+.cmp img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.cmp-b{position:absolute;inset:0;clip-path:inset(0 0 0 50%)}
+.cmp-line{position:absolute;top:0;bottom:0;left:50%;width:2px;background:#fff;box-shadow:0 0 6px rgba(0,0,0,.6)}
+#cmpR{width:min(100%,640px);margin-inline:auto;direction:ltr}
+.cmp-hint{margin:0;text-align:center;font-size:13px;color:var(--ink2)}
+.fr-diff ol{margin:4px 0 0;padding-inline-start:20px;font-size:14px}
+.note-row{display:flex;gap:8px;align-items:stretch}
+.note-row textarea{flex:1;min-width:0;border:0;border-radius:4px;background:var(--bg);color:var(--ink);font:inherit;padding:10px 12px;box-shadow:inset 0 0 0 1px var(--line);resize:vertical}
+.btn.mic{width:44px;padding:0;display:grid;place-items:center;background:var(--bg)}
+.btn.mic.on{background:#C0564C;color:#fff}
+@media (max-width:640px){.fr-grid{grid-template-columns:1fr}}
+
 /* מקרא */
 .legend-page{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:20px}
 .legend-page section{background:var(--paper);border-radius:6px;padding:16px 18px}
@@ -156,7 +195,7 @@ mark{background:var(--marker);color:inherit;padding:0 .15em}
   </nav>
 </header>
 <div class="menu" id="menu" hidden>
-  <button data-act="copyall">העתקת כל הפרומפטים<span class="hint">126 פרומפטים, שלושה לכל עיר, בנוסח הנבחר</span></button>
+  <button data-act="copyall">העתקת כל הפרומפטים<span class="hint">252 פרומפטים: שלוש גרסאות לכל עיר, לפני ואחרי</span></button>
   <button data-act="random">עיר אקראית<span class="hint">פותח עיר שלא בחרת</span></button>
   <button data-act="theme">החלפת בהיר וכהה<span class="hint">ברירת המחדל לפי המערכת</span></button>
   <button data-act="legend">מקרא ושיטה<span class="hint">חמש השכבות, הגרסאות והמקורות</span></button>
