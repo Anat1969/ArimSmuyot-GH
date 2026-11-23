@@ -1,0 +1,169 @@
+<title>ערים סמויות</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300;400;500&family=Assistant:wght@300;400;600&display=swap">
+<style>
+/* פריסה: כריכה של כדורי בדולח, אטלס בגריד של קטגוריות, ודף עיר ביחס זהוב: לוח תמונה 38% מול מעבדת פרומפט 62% */
+:root{
+  --bg:#FBFBFA; --paper:#F3F2EF; --ink:#2E2E2B; --ink2:#6B6A66; --line:#E4E3DF;
+  --marker:#F6E7A6; --ok:#3E8B5A; --shade:rgba(46,46,43,.08); --night:#1E1E22;
+  --display:'Frank Ruhl Libre', 'David Libre', Georgia, serif;
+  --body:'Assistant', 'Segoe UI', Arial, sans-serif;
+  --bar:56px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#17171A; --paper:#202024; --ink:#E9E7E1; --ink2:#A3A19B; --line:#2E2E33;
+  --marker:#5C5122; --ok:#6FBF8A; --shade:rgba(0,0,0,.35); --night:#0E0E11; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#17171A; --paper:#202024; --ink:#E9E7E1; --ink2:#A3A19B; --line:#2E2E33;
+  --marker:#5C5122; --ok:#6FBF8A; --shade:rgba(0,0,0,.35); --night:#0E0E11; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;direction:rtl;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+b,strong{font-weight:600}
+mark{background:var(--marker);color:inherit;padding:0 .15em}
+
+/* סרגל עליון */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;height:var(--bar);display:flex;align-items:center;gap:12px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);box-shadow:0 1px 0 var(--line)}
+.logo{width:36px;height:36px;border-radius:4px;display:grid;place-items:center;background:var(--paper);box-shadow:0 1px 2px var(--shade)}
+.logo:hover{background:var(--line)}
+.appname{font-family:var(--display);font-weight:300;font-size:22px;letter-spacing:.01em;white-space:nowrap}
+.appname small{font-family:var(--body);font-size:13px;color:var(--ink2);margin-inline-start:8px}
+.bar nav{margin-inline-start:auto;display:flex;gap:8px}
+.btn{min-height:36px;padding:0 14px;border-radius:4px;background:var(--paper);box-shadow:0 1px 2px var(--shade);font-size:14px;white-space:nowrap}
+.btn:hover{background:var(--line)}
+.btn.on{background:var(--ink);color:var(--bg)}
+.menu{position:fixed;top:calc(var(--bar) + env(safe-area-inset-top,0px) + 6px);right:max(16px,env(safe-area-inset-right,0px));z-index:40;
+  width:min(320px,calc(100vw - 32px));background:var(--bg);box-shadow:0 12px 40px var(--shade),0 0 0 1px var(--line);border-radius:6px;padding:8px}
+.menu button{display:block;width:100%;text-align:right;padding:10px 12px;border-radius:4px}
+.menu button:hover{background:var(--paper)}
+.menu .hint{display:block;font-size:12px;color:var(--ink2)}
+.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);z-index:50;background:var(--ink);color:var(--bg);
+  padding:10px 18px;border-radius:4px;font-size:14px;opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.show{opacity:1}
+
+/* כריכה */
+#cover{position:relative;height:calc(100vh - var(--bar) - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));min-height:520px;overflow:hidden;background:var(--night);color:#EDEBE4}
+#orbs{position:absolute;inset:0}
+.orb{position:absolute;top:0;left:0;padding:0;border-radius:50%;cursor:pointer;transition:filter .3s, box-shadow .3s}
+.orb svg{width:100%;height:100%;display:block;clip-path:circle(50%)}
+.orb:hover{filter:brightness(1.35);box-shadow:0 0 40px rgba(255,255,255,.18)}
+.orb .lbl{position:absolute;top:100%;left:50%;transform:translateX(-50%);font-size:13px;white-space:nowrap;opacity:0;transition:opacity .2s;color:#EDEBE4;margin-top:4px}
+.orb:hover .lbl{opacity:1}
+.cover-text{position:absolute;inset:auto 0 0 0;padding:0 max(16px,env(safe-area-inset-right,0px)) 7vh max(16px,env(safe-area-inset-left,0px));pointer-events:none;
+  background:linear-gradient(to top,rgba(14,14,17,.92) 30%,rgba(14,14,17,0));}
+.cover-inner{max-width:880px;margin-inline:auto;text-align:center;pointer-events:auto}
+.cover-inner h1{font-family:var(--display);font-weight:300;font-size:clamp(40px,6vw,76px);line-height:1.05;margin:0 0 10px;text-wrap:balance}
+.cover-q{font-family:var(--display);font-weight:300;font-size:clamp(18px,2vw,26px);min-height:3.2em;color:#D9D5C9;transition:opacity .8s}
+.cover-q span{display:block;font-family:var(--body);font-size:14px;color:#9C988C;margin-top:6px}
+.cover-go{margin-top:18px;min-height:44px;padding:0 28px;border-radius:4px;background:#EDEBE4;color:#1E1E22;font-size:16px}
+.cover-go:hover{background:#fff}
+
+/* מסגרת עמוד */
+.page{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 90px;max-width:1880px;margin-inline:auto}
+.lead{display:flex;flex-wrap:wrap;align-items:end;gap:12px 28px;margin-bottom:18px}
+.lead h2{font-family:var(--display);font-weight:300;font-size:clamp(26px,2.6vw,40px);margin:0;line-height:1.15}
+.lead p{margin:0;color:var(--ink2);max-width:62ch}
+.search{margin-inline-start:auto;min-height:38px;padding:0 12px;border:0;border-radius:4px;background:var(--paper);color:var(--ink);font:inherit;width:min(280px,100%);box-shadow:inset 0 0 0 1px var(--line)}
+
+/* אטלס */
+.atlas{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:20px}
+.cat{background:var(--paper);border-radius:6px;padding:14px 14px 10px;min-width:0}
+.cat h3{margin:0 0 8px;font-family:var(--display);font-weight:400;font-size:20px;display:flex;align-items:baseline;gap:8px}
+.cat h3 i{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none;transform:translateY(-2px)}
+.cat h3 small{font-family:var(--body);font-size:12px;color:var(--ink2);font-weight:400}
+.city-row{display:grid;grid-template-columns:48px 1fr;gap:10px;align-items:center;width:100%;text-align:right;padding:6px;border-radius:4px}
+.city-row:hover{background:var(--bg);box-shadow:0 1px 3px var(--shade)}
+.city-row .em{width:48px;height:48px;border-radius:50%;overflow:hidden}
+.city-row b{display:block;font-family:var(--display);font-weight:500;font-size:17px;line-height:1.2}
+.city-row span{display:block;font-size:13px;color:var(--ink2);line-height:1.4}
+.legend{margin-top:18px;font-size:13px;color:var(--ink2)}
+
+/* דף עיר */
+.city{display:grid;grid-template-columns:38.2fr 61.8fr;gap:24px;align-items:start}
+.plate{position:sticky;top:calc(var(--bar) + 20px);border-radius:6px;overflow:hidden;aspect-ratio:4/5;max-height:calc(100vh - var(--bar) - 40px);width:100%;background:var(--night);color:#EDEBE4}
+.plate svg{position:absolute;inset:0;width:100%;height:100%}
+.plate .cap{position:absolute;inset:auto 0 0 0;padding:28px 24px 22px;background:linear-gradient(to top,rgba(14,14,17,.94) 45%,rgba(14,14,17,0))}
+.plate .cat-tag{font-size:13px;letter-spacing:.04em;opacity:.85}
+.plate h2{font-family:var(--display);font-weight:300;font-size:clamp(32px,3vw,42px);margin:2px 0 6px;line-height:1.1}
+.plate .ins{font-family:var(--display);font-weight:300;font-size:clamp(16px,1.25vw,19px);line-height:1.5;color:#DAD6CA;margin:0}
+.plate .uniq{font-size:13px;color:#A8A497;margin:8px 0 0}
+.lab{min-width:0;display:flex;flex-direction:column;gap:16px}
+.distil{font-family:var(--display);font-weight:300;font-size:clamp(22px,2vw,30px);line-height:1.3;margin:0}
+.lbl-s{font-size:12px;color:var(--ink2);letter-spacing:.03em;display:block;margin-bottom:2px}
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tab{min-height:40px;padding:4px 14px;border-radius:4px;background:var(--paper);box-shadow:0 1px 2px var(--shade);text-align:right;line-height:1.25;flex:1 1 150px;min-width:0}
+.tab small{display:block;font-size:12px;color:var(--ink2)}
+.tab.on{background:var(--ink);color:var(--bg)}
+.tab.on small{color:color-mix(in srgb,var(--bg) 70%,transparent)}
+.layers{display:grid;gap:0;border-radius:6px;background:var(--paper);padding:6px 0}
+.layer{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:8px 14px;align-items:baseline}
+.layer + .layer{box-shadow:0 -1px 0 var(--line)}
+.layer .k{font-size:13px;color:var(--ink2);display:flex;gap:8px;align-items:baseline}
+.layer .k i{font-style:normal;font-variant-numeric:tabular-nums;width:18px;height:18px;border-radius:50%;display:inline-grid;place-items:center;font-size:11px;color:#fff;flex:none}
+.layer .vv{min-width:0}
+.layer.flash .vv{animation:flash .9s ease}
+@keyframes flash{0%{background:var(--marker)}100%{background:transparent}}
+.promptbox{background:var(--night);color:#ECEAE3;border-radius:6px;padding:16px 18px;font-size:15px;line-height:1.75;white-space:pre-wrap;word-break:break-word;direction:rtl}
+.promptbox .par{display:block;margin-top:6px;color:#9EC7A9;direction:ltr;text-align:left;font-size:13px}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn.main{background:var(--ink);color:var(--bg)}
+.btn.main:hover{opacity:.9}
+.seg{display:inline-flex;background:var(--paper);border-radius:4px;padding:3px;gap:3px;box-shadow:inset 0 0 0 1px var(--line)}
+.seg button{min-height:30px;padding:0 10px;border-radius:3px;font-size:13px}
+.seg button.on{background:var(--bg);box-shadow:0 1px 3px var(--shade);font-weight:600}
+.saved{font-size:13px;color:var(--ok);min-width:5em}
+.hybrid{background:var(--paper);border-radius:6px;padding:12px 14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.hybrid p{margin:0;flex:1 1 260px;font-size:14px;color:var(--ink2)}
+.hybrid select{min-height:36px;border-radius:4px;border:0;background:var(--bg);color:var(--ink);font:inherit;padding:0 10px;box-shadow:inset 0 0 0 1px var(--line)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:16px;font-size:14px;color:var(--ink2)}
+.facts p{margin:0}
+.facts .src{font-size:12px}
+.facts .src abbr{text-decoration:none;border-bottom:1px dotted var(--ink2);cursor:help}
+.pager{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:max(16px,env(safe-area-inset-left,0px));z-index:15;display:flex;gap:8px}
+.pager .btn{width:150px;background:var(--bg);box-shadow:0 2px 10px var(--shade),0 0 0 1px var(--line);text-align:center;overflow:hidden;text-overflow:ellipsis}
+
+/* מקרא */
+.legend-page{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:20px}
+.legend-page section{background:var(--paper);border-radius:6px;padding:16px 18px}
+.legend-page h3{font-family:var(--display);font-weight:400;margin:0 0 8px;font-size:20px}
+.legend-page ol{margin:0;padding-inline-start:20px}
+
+@media (max-width:860px){
+  .city{grid-template-columns:1fr}
+  .plate{position:relative;top:0;aspect-ratio:1/1;max-height:none}
+  .layer{grid-template-columns:1fr;gap:2px}
+  .appname small{display:none}
+  .pager .btn{width:120px}
+}
+@media (max-width:520px){ .bar nav .btn.opt{display:none} }
+@media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important} }
+</style>
+
+<header class="bar">
+  <button class="logo" id="logoBtn" aria-label="תפריט פעולות" title="תפריט פעולות">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>
+  </button>
+  <a class="appname" href="#cover" style="color:inherit;text-decoration:none">ערים סמויות<small>מעבדת המחשה</small></a>
+  <nav>
+    <button class="btn" data-go="atlas">אטלס הערים</button>
+    <button class="btn opt" data-go="legend">מקרא</button>
+  </nav>
+</header>
+<div class="menu" id="menu" hidden>
+  <button data-act="copyall">העתקת כל הפרומפטים<span class="hint">126 פרומפטים, שלושה לכל עיר, בנוסח הנבחר</span></button>
+  <button data-act="random">עיר אקראית<span class="hint">פותח עיר שלא בחרת</span></button>
+  <button data-act="theme">החלפת בהיר וכהה<span class="hint">ברירת המחדל לפי המערכת</span></button>
+  <button data-act="legend">מקרא ושיטה<span class="hint">חמש השכבות, הגרסאות והמקורות</span></button>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<main id="view"></main>
+
+<script>/*DATA*/</script>
+<script>/*APP*/</script>
