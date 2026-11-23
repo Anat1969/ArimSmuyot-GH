@@ -119,4 +119,8 @@ body{{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);
 <script>document.querySelectorAll('.th').forEach(function(t){{var s=document.querySelector('#'+t.dataset.for+' .plate img');if(s)t.src=s.src;}});</script>
 '''
 open(os.path.join(HERE, 'book.html'), 'w', encoding='utf8').write(doc)
+# גרסה לאתר (Vercel): מסמך מלא, וכפתור חזרה לאפליקציה
+site = doc.replace('<header class="title pad">', '<a class="back" href="../">לאפליקציה</a>\n<header class="title pad">', 1)
+site = site.replace('</style>', '.back{position:fixed;top:14px;left:max(16px,env(safe-area-inset-left,0px));z-index:5;font-size:14px;color:var(--ink);text-decoration:none;background:#F1F0EC;padding:8px 14px;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.08)}.back:hover{background:var(--line)}\n</style>', 1)
+open(os.path.join(HERE, 'index.html'), 'w', encoding='utf8').write('<!doctype html>\n<html lang="he" dir="rtl">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n</head>\n<body>\n' + site + '\n</body>\n</html>\n')
 print('pages', len(PAGES), 'bytes', len(doc))
