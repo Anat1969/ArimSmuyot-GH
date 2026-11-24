@@ -201,6 +201,10 @@ body{{margin:0;background:var(--desk);color:var(--ink);font-family:var(--body);d
 .leaf.back{{left:0;transform-origin:right center}}
 .face{{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--paper);overflow:hidden}}
 .face.b{{transform:rotateY(180deg)}}
+.book .pg-text,.book .pg-cover .ct,.book .pg-cover .open,.book .pg-cover .ring{{transition:opacity .15s ease}}
+.book.textout .pg-text,.book.textout .pg-cover .ct,.book.textout .pg-cover .open,.book.textout .pg-cover .ring{{opacity:0}}
+.book.textin .pg-text,.book.textin .pg-cover .ct,.book.textin .pg-cover .open,.book.textin .pg-cover .ring{{animation:tin .22s ease}}
+@keyframes tin{{from{{opacity:0}}to{{opacity:1}}}}
 .endpaper{{background:#EEE8DC;box-shadow:inset 0 0 0 calc(var(--S)*.03) #E3DBCB}}
 /* כריכה */
 .pg-cover{{position:absolute;inset:0;direction:rtl;background:radial-gradient(120% 90% at 30% 20%,#2C3746,var(--board) 60%,#151B24);color:var(--gold);display:grid;place-items:center;cursor:pointer}}
@@ -415,6 +419,7 @@ var SD={SDATA};
   }}
   function show(k){{
     L.innerHTML=part(k,'L'); R.innerHTML=part(k,'R'); i=k; book.classList.toggle('closed',k===0);
+    book.classList.remove('textout'); book.classList.add('textin'); setTimeout(function(){{book.classList.remove('textin');}},260);
     var sc=L.querySelector('svg.score'); if(sc) score(sc,false);
     var f=n>1?k/(n-1):0; book.style.setProperty('--tr',(2+f*10)+'px'); book.style.setProperty('--tl',(2+(1-f)*10)+'px');
     ui(); mini();
@@ -435,9 +440,13 @@ var SD={SDATA};
     // ספר עברי: קדימה, הישן יוצא ימינה והחדש נכנס משמאל
     if(narrow()){{busy=true;book.style.setProperty('--dx',k>i?'24px':'-24px');book.classList.remove('turn');void book.offsetWidth;book.classList.add('turn');setTimeout(function(){{show(k);}},200);setTimeout(done,460);return;}}
     busy=true; var fwd=k>i;
-    // פתיחת הכריכה: קודם הספר נע למרכז, ורק אז הכריכה מתהפכת
-    if(fwd&&i===0&&book.classList.contains('closed')){{book.classList.remove('closed');setTimeout(function(){{flip(k,true);}},440);return;}}
-    flip(k,fwd);
+    // קודם הטקסט יורד, ורק אחר כך הדף נהפך. כך אין טקסט על דף שזז
+    book.classList.add('textout');
+    setTimeout(function(){{
+      // פתיחת הכריכה: קודם הספר נע למרכז, ורק אז הכריכה מתהפכת
+      if(fwd&&i===0&&book.classList.contains('closed')){{book.classList.remove('closed');setTimeout(function(){{flip(k,true);}},440);return;}}
+      flip(k,fwd);
+    }},160);
   }}
   function base(){{return pending!==null?pending:(busy?flying:i);}}
   function done(){{busy=false;if(pending!==null){{var t=pending;pending=null;if(t!==i)go(t);}}}}
