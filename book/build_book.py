@@ -89,9 +89,9 @@ FIRST_CITY = 4  # 0 כריכה סגורה, 1 שער, 2 פרטיטורה, 3 מק�
 spreads = []
 # 0: כריכה סגורה. הכריכה בצד שמאל, ובצד ימין שולחן.
 ring = ''.join(f'<span style="--a:{i*360/11}deg">{glyph(k, 22, "#C9B37E")}</span>' for i, k in enumerate(ORDER))
-spreads.append((f'''<div class="pg-cover"><div class="ring">{ring}</div>
+spreads.append(('<div class="pg-img endpaper"></div>', f'''<div class="pg-cover"><div class="ring">{ring}</div>
   <div class="ct"><small>איטלו קאלווינו</small><h1>ספר הערים<br>הסמויות</h1><span>{N} ערים · כרך ראשון</span></div>
-  <p class="open">לפתיחה, לחצי על הכריכה</p></div>''', '<div class="pg-img endpaper"></div>', 'כריכה'))
+  <p class="open">לפתיחה, לחצי על הכריכה</p></div>''', 'כריכה'))
 # 1: שער ותוכן
 toc = ''.join(f'<li><button data-to="{FIRST_CITY+k}">{glyph(POS[p["n"]]["s"], 13)}<b>{POS[p["n"]]["pos"]:02d}</b>{e(p["n"])}</button></li>' for k, p in enumerate(PAGES))
 mosaic = ''.join(f'<button class="cell" data-to="{FIRST_CITY+k}" aria-label="{e(p["n"])}"><span class="ph"><img src="{thumb(p["img"])}" alt=""></span><small><b>{k+1:02d}</b>{e(p["n"])}</small></button>' for k, p in enumerate(PAGES))
@@ -181,29 +181,29 @@ body{{margin:0;background:var(--desk);color:var(--ink);font-family:var(--body);d
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}}
 .stage{{height:100%;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:1fr auto;place-items:center;gap:14px;padding-block:22px 16px}}
 .book{{position:relative;width:calc(var(--S)*2);height:var(--S);perspective:calc(var(--S)*5);direction:ltr;--tl:8px;--tr:2px;transition:transform .42s cubic-bezier(.45,.05,.25,1)}}
-.book.closed{{transform:translateX(calc(var(--S)/-2))}}
+.book.closed{{transform:translateX(calc(var(--S)/2))}}
 .book::before{{content:"";position:absolute;inset:-10px calc(-12px - var(--tr)) -10px calc(-12px - var(--tl));border-radius:6px;background:#D8D4CC;box-shadow:0 40px 80px rgba(40,34,24,.25);transition:inset .6s}}
 /* עובי הדפים: מחוץ לעמודים, כך שהעמוד והתמונה לא מצטמצמים */
 .stack{{position:absolute;top:3px;bottom:3px;background:repeating-linear-gradient(90deg,#F4F1EA 0 1px,#D9D4CA 1px 2px);transition:width .6s}}
 .stack.L{{right:100%;width:var(--tl);border-radius:3px 0 0 3px}}
 .stack.R{{left:100%;width:var(--tr);border-radius:0 3px 3px 0}}
-.book.closed::before{{inset:-10px -12px -10px calc(50% - 2px)}}
+.book.closed::before{{inset:-10px calc(50% - 2px) -10px -12px}}
 .book.closed .stack{{display:none}}
 .side{{position:absolute;top:0;width:var(--S);height:var(--S);background:var(--paper);overflow:hidden}}
 .side.L{{left:0;border-radius:3px 0 0 3px}}
 .side.R{{right:0;border-radius:0 3px 3px 0}}
-.book.closed .side.L{{visibility:hidden}}
+.book.closed .side.R{{visibility:hidden}}
 .side.L::after,.side.R::after,.face::after{{content:"";position:absolute;top:0;bottom:0;width:14%;pointer-events:none;z-index:3}}
 .side.L::after{{right:0;background:linear-gradient(to left,rgba(40,32,20,.22),rgba(40,32,20,0))}}
 .side.R::after{{left:0;background:linear-gradient(to right,rgba(40,32,20,.16),rgba(40,32,20,0))}}
 .leaf{{position:absolute;top:0;width:var(--S);height:var(--S);transform-style:preserve-3d;z-index:10;transition:transform .9s cubic-bezier(.45,.05,.25,1)}}
-.leaf.fwd{{right:0;transform-origin:left center}}
-.leaf.back{{left:0;transform-origin:right center}}
+.leaf.fwd{{left:0;transform-origin:right center}}
+.leaf.back{{right:0;transform-origin:left center}}
 .face{{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--paper);overflow:hidden}}
 .face.b{{transform:rotateY(180deg)}}
-.book .pg-text,.book .pg-cover .ct,.book .pg-cover .open,.book .pg-cover .ring{{transition:opacity .15s ease}}
+.book .pg-text,.book .pg-cover .ct,.book .pg-cover .open,.book .pg-cover .ring{{transition:opacity .45s ease}}
 .book.textout .pg-text,.book.textout .pg-cover .ct,.book.textout .pg-cover .open,.book.textout .pg-cover .ring{{opacity:0}}
-.book.textin .pg-text,.book.textin .pg-cover .ct,.book.textin .pg-cover .open,.book.textin .pg-cover .ring{{animation:tin .22s ease}}
+.book.textin .pg-text,.book.textin .pg-cover .ct,.book.textin .pg-cover .open,.book.textin .pg-cover .ring{{animation:tin .55s ease}}
 @keyframes tin{{from{{opacity:0}}to{{opacity:1}}}}
 .endpaper{{background:#EEE8DC;box-shadow:inset 0 0 0 calc(var(--S)*.03) #E3DBCB}}
 /* כריכה */
@@ -318,8 +318,8 @@ kbd{{font-family:var(--body);font-size:.9em;background:#F1EFEA;border-radius:3px
   .side.L::after,.side.R::after{{display:none}}
   .book.closed::before{{inset:-5px}}
   .book.closed{{transform:none}}
-  .book.closed .side.L{{display:none}}
-  .book.closed .side.R{{display:block}}
+  .book.closed .side.R{{display:none}}
+  .book.closed .side.L{{display:block}}
   .contact .grid{{grid-template-rows:none;grid-auto-rows:auto}}
   .cell .ph{{flex:none;aspect-ratio:1/1}}
   .cell small{{font-size:11.5px;padding-top:6px}}
@@ -419,7 +419,7 @@ var SD={SDATA};
   }}
   function show(k){{
     L.innerHTML=part(k,'L'); R.innerHTML=part(k,'R'); i=k; book.classList.toggle('closed',k===0);
-    book.classList.remove('textout'); book.classList.add('textin'); setTimeout(function(){{book.classList.remove('textin');}},260);
+    book.classList.remove('textout'); book.classList.add('textin'); setTimeout(function(){{book.classList.remove('textin');}},560);
     var sc=L.querySelector('svg.score'); if(sc) score(sc,false);
     var f=n>1?k/(n-1):0; book.style.setProperty('--tr',(2+f*10)+'px'); book.style.setProperty('--tl',(2+(1-f)*10)+'px');
     ui(); mini();
@@ -446,7 +446,7 @@ var SD={SDATA};
       // פתיחת הכריכה: קודם הספר נע למרכז, ורק אז הכריכה מתהפכת
       if(fwd&&i===0&&book.classList.contains('closed')){{book.classList.remove('closed');setTimeout(function(){{flip(k,true);}},440);return;}}
       flip(k,fwd);
-    }},160);
+    }},460);
   }}
   function base(){{return pending!==null?pending:(busy?flying:i);}}
   function done(){{busy=false;if(pending!==null){{var t=pending;pending=null;if(t!==i)go(t);}}}}
@@ -454,17 +454,17 @@ var SD={SDATA};
   function flip(k,fwd){{
     var leaf=document.createElement('div');
     leaf.className='leaf '+(fwd?'fwd':'back');
-    // ספר עברי. קדימה: העמוד הימני (טקסט) נהפך אל השמאל, וגבו הוא הוויזואל של העמוד הבא.
-    // אחורה: העמוד השמאלי (ויזואל) נהפך אל הימין, וגבו הוא הטקסט של העמוד הקודם.
+    // ספר עברי, כיוון הפוך: קדימה העמוד השמאלי (ויזואל) נהפך אל הימין, וגבו הוא הטקסט של העמוד הבא.
+    // אחורה: העמוד הימני (טקסט) נהפך אל השמאל, וגבו הוא הוויזואל של העמוד הקודם.
     if(fwd){{
-      leaf.innerHTML='<div class="face f">'+part(i,'R')+'</div><div class="face b">'+part(k,'L')+'</div>';
-      R.innerHTML=part(k,'R');
-    }} else {{
       leaf.innerHTML='<div class="face f">'+part(i,'L')+'</div><div class="face b">'+part(k,'R')+'</div>';
       L.innerHTML=part(k,'L');
+    }} else {{
+      leaf.innerHTML='<div class="face f">'+part(i,'R')+'</div><div class="face b">'+part(k,'L')+'</div>';
+      R.innerHTML=part(k,'R');
     }}
     book.appendChild(leaf); hyd(leaf); hyd(L); hyd(R);
-    requestAnimationFrame(function(){{requestAnimationFrame(function(){{leaf.style.transform='rotateY('+(fwd?-180:180)+'deg)';}});}});
+    requestAnimationFrame(function(){{requestAnimationFrame(function(){{leaf.style.transform='rotateY('+(fwd?180:-180)+'deg)';}});}});
     setTimeout(function(){{show(k);leaf.remove();done();}},940);
   }}
   var ov=document.getElementById('mapov');
