@@ -311,7 +311,8 @@ kbd{{font-family:var(--body);font-size:.9em;background:#F1EFEA;border-radius:3px
   .score-pg .score-wrap{{max-height:100%;overflow:auto}}
   .mapov .score{{min-width:1100px}}
   .mapov .score-wrap{{overflow:auto;max-height:100%}}
-  .ctrl{{gap:6px;grid-template-columns:auto auto minmax(0,1fr) auto auto}}.ctrl button.nav{{min-width:64px}}.ctrl button.sub2{{padding:0 6px;font-size:13px}}
+  .ctrl{{gap:6px;grid-template-columns:auto auto minmax(0,1fr) auto auto;position:fixed;bottom:0;left:0;right:0;width:auto;z-index:40;background:color-mix(in srgb,var(--desk) 94%,transparent);backdrop-filter:blur(6px);box-shadow:0 -1px 0 rgba(0,0,0,.08);padding:8px max(10px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px))}}
+  .stage{{padding-bottom:96px}}.ctrl button.nav{{min-width:64px}}.ctrl button.sub2{{padding:0 6px;font-size:13px}}
   .legov .sheet{{grid-template-columns:1fr;--S:calc(100vw - 32px)}}
   .legend-pg{{position:relative}}
   .side.L:has(.legend-pg){{height:auto}}
@@ -394,7 +395,7 @@ var SD={SDATA};
     L.innerHTML=part(k,'L'); R.innerHTML=part(k,'R'); i=k; book.classList.toggle('closed',k===0);
     var sc=L.querySelector('svg.score'); if(sc) score(sc,false);
     var f=n>1?k/(n-1):0; book.style.setProperty('--tr',(2+f*10)+'px'); book.style.setProperty('--tl',(2+(1-f)*10)+'px');
-    ui(); mini(); try{{history.replaceState(null,'','#p'+k);}}catch(e){{}}
+    ui(); mini();
   }}
   function ui(){{
     document.getElementById('prev').disabled=i===0; document.getElementById('next').disabled=i===n-1; document.getElementById('toCover').disabled=i===0;
@@ -456,13 +457,14 @@ var SD={SDATA};
     if(ev.key==='ArrowLeft'||ev.key==='PageDown'||ev.key===' '){{ev.preventDefault();go(base()+1);}}if(ev.key==='ArrowRight'||ev.key==='PageUp'){{ev.preventDefault();go(base()-1);}}if(ev.key==='Home')go(0);if(ev.key==='End')go(n-1);if(ev.key==='m'||ev.key==='M')openMap();}});
   var sx=null;book.addEventListener('touchstart',function(ev){{sx=ev.touches[0].clientX;}},{{passive:true}});
   book.addEventListener('touchend',function(ev){{if(sx===null)return;var dx=ev.changedTouches[0].clientX-sx;if(Math.abs(dx)>40)go(dx>0?i+1:i-1);sx=null;}});
-  var m=(location.hash||'').match(/^#p(\\d+)$/); show(m?Math.min(+m[1],n-1):0);
+  try{{if(location.hash)history.replaceState(null,'',location.pathname+location.search);}}catch(e){{}}
+  show(0);
 }})();
 </script>
 '''
 open(os.path.join(HERE, 'book.html'), 'w', encoding='utf8').write(doc)
 # גרסה לאתר (Vercel): מסמך מלא, וכפתור חזרה לאפליקציה
-site = doc.replace('<div class="stage">', '<a class="back" href="../">לאפליקציה</a>\n<div class="stage">', 1)
+site = doc.replace('<div class="stage">', '<a class="back" href="lab/">מעבדת ההמחשה</a>\n<div class="stage">', 1)
 site = site.replace('</style>', '.back{position:fixed;top:12px;left:max(16px,env(safe-area-inset-left,0px));z-index:50;font-size:13px;color:var(--ink);text-decoration:none;background:var(--paper);padding:6px 12px;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.1)}\n</style>', 1)
-open(os.path.join(HERE, 'index.html'), 'w', encoding='utf8').write('<!doctype html>\n<html lang="he" dir="rtl">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n</head>\n<body>\n' + site + '\n</body>\n</html>\n')
+open(os.path.join(HERE, '..', 'index.html'), 'w', encoding='utf8').write('<!doctype html>\n<html lang="he" dir="rtl">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n</head>\n<body>\n' + site + '\n</body>\n</html>\n')
 print('spreads', len(spreads), 'bytes', len(doc))

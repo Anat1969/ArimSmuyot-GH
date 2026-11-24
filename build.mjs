@@ -5,7 +5,8 @@ const app = readFileSync('src/app.html', 'utf8')
   .replace('/*APP*/', () => readFileSync('src/app.js', 'utf8'));
 mkdirSync('dist', { recursive: true });
 writeFileSync('dist/artifact.html', app);
-writeFileSync('index.html', `<!doctype html>
+mkdirSync('lab', { recursive: true });
+writeFileSync('lab/index.html', `<!doctype html>
 <html lang="he" dir="rtl">
 <head>
 <meta charset="utf-8">
@@ -17,4 +18,4 @@ ${app}
 </body>
 </html>
 `);
-console.log('נבנה:', app.length, 'תווים');
+console.log('נבנה (lab/index.html):', app.length, 'תווים');
