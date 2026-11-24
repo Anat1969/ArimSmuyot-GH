@@ -147,7 +147,7 @@ function renderCover() {
 function renderAtlas(filter) {
   setNav('atlas');
   var f = (filter || '').trim();
-  var html = '<div class="page"><div class="lead"><h2>אטלס הערים</h2><p><b>42 ערים</b> ב-<b>12 קבוצות</b> של קאלווינו. בחרי עיר כדי לקבל <b>שלושה פרומפטים</b> להמחשה, בנויים בחמש שכבות.</p>' +
+  var html = '<div class="page"><div class="lead"><h2>אטלס הערים</h2><p><b>' + CITIES.length + ' ערים</b> ב-<b>12 קבוצות</b> של קאלווינו: 55 ערי הספר, וונציה כעיר המשתמעת. בחרי עיר כדי לקבל <b>שלושה פרומפטים</b> להמחשה, בנויים בחמש שכבות.</p>' +
     '<input id="q" class="search" type="search" placeholder="חיפוש עיר, חומר או רעיון" value="' + esc(f) + '" aria-label="חיפוש"></div><div class="atlas">';
   var count = 0;
   ORDER.forEach(function (k) {
@@ -392,7 +392,7 @@ document.addEventListener('keydown', function (e) {
   }
 });
 function act(a) {
-  if (a === 'copyall') copy(CITIES.map(function (c) { return '## ' + c.n + ' (' + CATS[c.k].n + ')\nזיקוק: ' + c.d + '\n' + c.v.map(function (v, i) { return ['א', 'ב', 'ג'][i] + ' לפני. ' + promptText(layersOf(c, i), state.tool) + '\n' + ['א', 'ב', 'ג'][i] + ' אחרי. ' + promptText(layersOf(c, i, null, true), state.tool); }).join('\n'); }).join('\n\n'), 'כל 252 הפרומפטים הועתקו');
+  if (a === 'copyall') copy(CITIES.map(function (c) { return '## ' + c.n + ' (' + CATS[c.k].n + ')\nזיקוק: ' + c.d + '\n' + c.v.map(function (v, i) { return ['א', 'ב', 'ג'][i] + ' לפני. ' + promptText(layersOf(c, i), state.tool) + '\n' + ['א', 'ב', 'ג'][i] + ' אחרי. ' + promptText(layersOf(c, i, null, true), state.tool); }).join('\n'); }).join('\n\n'), 'כל ' + (CITIES.length * 6) + ' הפרומפטים הועתקו');
   if (a === 'random') location.hash = CITIES[Math.floor(Math.random() * CITIES.length)].id;
   if (a === 'legend') location.hash = 'legend';
   if (a === 'theme') { var r = document.documentElement, dark = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; r.dataset.theme = dark ? 'light' : 'dark'; store('arim.theme', r.dataset.theme); }

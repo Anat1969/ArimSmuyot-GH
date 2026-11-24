@@ -68,7 +68,7 @@ def glyph(k, size=16, color=None):
 PAGES.sort(key=lambda p: POS[p['n']]['pos'])
 done = {p['n'] for p in PAGES}
 N = len(PAGES)
-FIRST_CITY = 3  # 0 כריכה סגורה, 1 שער, 2 פרטיטורה
+FIRST_CITY = 4  # 0 כריכה סגורה, 1 שער, 2 פרטיטורה, 3 מקרא
 spreads = []
 # 0: כריכה סגורה. הכריכה בצד שמאל, ובצד ימין שולחן.
 ring = ''.join(f'<span style="--a:{i*360/11}deg">{glyph(k, 22, "#C9B37E")}</span>' for i, k in enumerate(ORDER))
@@ -79,7 +79,7 @@ spreads.append(('', f'''<div class="pg-cover"><div class="ring">{ring}</div>
 toc = ''.join(f'<li><button data-to="{FIRST_CITY+k}">{glyph(POS[p["n"]]["s"], 13)}<b>{POS[p["n"]]["pos"]:02d}</b>{e(p["n"])}</button></li>' for k, p in enumerate(PAGES))
 mosaic = ''.join(f'<button data-to="{FIRST_CITY+k}" aria-label="{e(p["n"])}"><img src="{thumb(p["img"])}" alt=""></button>' for k, p in enumerate(PAGES))
 spreads.append((f'''<div class="pg-text" style="--c:#2E2E2B">
-  <div class="rh"><span>שער</span><span>ספר הערים הסמויות</span></div>
+  <div class="rh"><span>שער</span><span><button class="tocover" data-to="0" title="לכריכה">ספר הערים הסמויות</button></span></div>
   <div class="mid"><h1>ספר הערים הסמויות</h1><p class="sub">כל עיר היא מתח אחד. התמונה מחזיקה אותו, וההייקו משאיר אותו פתוח.</p></div>
   <ol class="toc">{toc}</ol>
   <div class="folio">1</div>
@@ -87,7 +87,7 @@ spreads.append((f'''<div class="pg-text" style="--c:#2E2E2B">
 # 2: הפרטיטורה
 legend = ''.join(f'<li>{glyph(k,14)}<span>{SER[k][0]}</span></li>' for k in ORDER)
 spreads.append((f'''<div class="pg-text" style="--c:#2E2E2B">
-  <div class="rh"><span>מפת הספר</span><span>ספר הערים הסמויות</span></div>
+  <div class="rh"><span>מפת הספר</span><span><button class="tocover" data-to="0" title="לכריכה">ספר הערים הסמויות</button></span></div>
   <div class="mid"><h2>פרטיטורה</h2>
     <p class="insight">55 ערים ב-11 סדרות, חמש בכל סדרה, מחולקות ל-9 פרקים. <b>הציר האופקי הוא סדר הקריאה</b>, מימין לשמאל, והקווים האנכיים מפרידים בין הפרקים. <b>כל שורה היא סדרה.</b></p>
     <p class="insight keys"><i class="k1"></i>בספר, לחיצה פותחת <i class="k2"></i>בקובץ, עוד בלי תמונה <i class="k3"></i>לא בקובץ</p>
@@ -96,10 +96,37 @@ spreads.append((f'''<div class="pg-text" style="--c:#2E2E2B">
   <p class="src">מקור: סדר הקריאה והפרקים לפי ויקיפדיה. השיוך לסדרות נגזר מהתבנית של הספר ואומת מול הקובץ.</p>
   <div class="folio">3</div>
 </div>''', '<div class="pg-img score-pg"><div class="score-wrap"><svg class="score" data-big="0"></svg></div></div>', 'פרטיטורה'))
+TB = '<button class="tocover" data-to="0" title="לכריכה">ספר הערים הסמויות</button>'
+LEG_R = f'''<div class="pg-text" style="--c:#2E2E2B">
+  <div class="rh"><span>מקרא</span><span>{TB}</span></div>
+  <div class="mid"><h2>מקרא</h2>
+    <ol class="howto">
+      <li><b>שורת הראש:</b> הסימן והשם של הסדרה, המקום של העיר בסדרה מתוך 5, ומספר הפרק.</li>
+      <li><b>שם העיר,</b> ומתחתיו <b>המתח</b>: הניגוד האחד שהתמונה מחזיקה, במרקר בצבע הסדרה.</li>
+      <li><b>התובנה:</b> פרשנות מתוך הקובץ.</li>
+      <li><b>ההייקו:</b> נכתב לספר הזה, ומשאיר את המתח פתוח.</li>
+      <li><b>העמוד השמאלי:</b> התמונה, שנוצרה מהמתח, בגודל מלא.</li>
+      <li><b>מתחת לספר:</b> פס של 55 ערים. העיר הפתוחה ממוסגרת, ולחיצה על הפס פותחת את המפה.</li>
+      <li><b>עובי הדפים</b> בשני הצדדים מראה כמה קראת וכמה נשאר.</li>
+    </ol>
+  </div>
+  <p class="src">עובדה: מבנה הספר, הסדר והפרקים. פרשנות: התובנות מהקובץ. יצירה: המתח, ההייקו והתמונות.</p>
+  <div class="folio">7</div>
+</div>'''
+SERDESC = {'mem':'העיר כפי שהיא נשמרת ונשכחת','des':'העיר כפי שרוצים אותה','sig':'העיר כטקסט שקוראים',
+ 'thin':'ערים קלות, שלד בלי משקל','trade':'מה שעובר בין אנשים','eyes':'העיר כפי שהמבט בונה אותה',
+ 'names':'הפער בין השם למקום','dead':'העבר שחי לצד ההווה','sky':'הסדר שמעל העיר',
+ 'cont':'עיר שאין לה סוף','hidden':'עיר בתוך עיר'}
+leg = ''.join(f'<li>{glyph(k,18)}<div><b style="color:{SER[k][1]}">{SER[k][0]}</b><span>{SERDESC[k]}</span></div></li>' for k in ORDER)
+spreads.append((LEG_R, f'''<div class="pg-img legend-pg"><div class="lg-in">
+  <h3>11 הסדרות <small>פרשנות קצרה</small></h3><ul class="serlist">{leg}</ul>
+  <h3>במפה</h3><p class="keys"><i class="k1"></i>בספר, לחיצה פותחת <i class="k2"></i>בקובץ, עוד בלי תמונה <i class="k3"></i>לא בקובץ <i class="k4"></i>העיר הפתוחה</p>
+  <h3>ניווט</h3><ul class="navkeys"><li><kbd>←</kbd> או "הבא": עמוד קדימה</li><li><kbd>→</kbd> או "הקודם": עמוד אחורה</li><li>לחיצה על העמוד השמאלי או הימני</li><li><kbd>Home</kbd> או "לכריכה": חזרה לכריכה</li><li><kbd>End</kbd>: סוף הספר</li><li><kbd>M</kbd>: מפת הספר</li><li><kbd>?</kbd>: המקרא</li><li>בנייד: החלקה</li></ul>
+</div></div>''', 'מקרא'))
 for k, p in enumerate(PAGES):
     st = POS[p['n']]; sname, col = SER[st['s']]
     spreads.append((f'''<div class="pg-text" style="--c:{col}">
-  <div class="rh"><span>{glyph(st['s'],15)}{sname} · {st['n']} מתוך 5</span><span>פרק {st['chapter']}</span></div>
+  <div class="rh"><span>{glyph(st['s'],15)}{sname} · {st['n']} מתוך 5</span><span><button class="tocover" data-to="0" title="לכריכה">ספר הערים הסמויות</button> · פרק {st['chapter']}</span></div>
   <div class="mid">
     <h2>{e(p['n'])}</h2>
     <p class="tension"><span class="lbl">המתח</span><mark>{e(p['t'])}</mark></p>
@@ -110,7 +137,7 @@ for k, p in enumerate(PAGES):
 </div>''', f'<div class="pg-img"><img src="{uri(p["img"])}" alt="{e(p["n"])}: {e(p["t"])}"></div>', p['n']))
 allnames = ''.join(f'<button data-to="{FIRST_CITY+[i for i,q in enumerate(PAGES) if q["n"]==c["he"]][0]}" class="on">{e(c["he"])}</button>' if c['he'] in done else f'<span>{e(c["he"])}</span>' for c in STRUCT)
 spreads.append((f'''<div class="pg-text" style="--c:#2E2E2B">
-  <div class="rh"><span>סוף הכרך הראשון</span><span>ספר הערים הסמויות</span></div>
+  <div class="rh"><span>סוף הכרך הראשון</span><span><button class="tocover" data-to="0" title="לכריכה">ספר הערים הסמויות</button></span></div>
   <div class="mid"><h2>{N} מתוך 55</h2><p class="insight">הערים המודגשות כבר בספר. השאר עוד מחכות לתמונה שלהן, ולמתח שיחזיק אותה.</p></div>
   <p class="haiku">עיר אחת נגמרת<br>כדי שתיפתח אחרת<br>בדף שעוד לבן</p>
   <div class="folio">{2*(FIRST_CITY+N)-1}</div>
@@ -132,10 +159,11 @@ doc = f'''<title>ספר הערים הסמויות</title>
   --S:min(calc(100vh - 170px),calc((100vw - 96px)/2),860px)}}
 *{{box-sizing:border-box}}
 html,body{{height:100%}}
+@media (min-width:821px){{html{{overflow:hidden;overflow:clip}}}}
 body{{margin:0;background:var(--desk);color:var(--ink);font-family:var(--body);direction:rtl;overflow:hidden;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}}
 .stage{{height:100%;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:1fr auto;place-items:center;gap:14px;padding-block:22px 16px}}
-.book{{position:relative;width:calc(var(--S)*2);height:var(--S);perspective:calc(var(--S)*5);direction:ltr;--tl:8px;--tr:2px;transition:transform .8s cubic-bezier(.45,.05,.25,1)}}
+.book{{position:relative;width:calc(var(--S)*2);height:var(--S);perspective:calc(var(--S)*5);direction:ltr;--tl:8px;--tr:2px;transition:transform .42s cubic-bezier(.45,.05,.25,1)}}
 .book.closed{{transform:translateX(calc(var(--S)/2))}}
 .book::before{{content:"";position:absolute;inset:-10px calc(-12px - var(--tr)) -10px calc(-12px - var(--tl));border-radius:6px;background:#D8D4CC;box-shadow:0 40px 80px rgba(40,34,24,.25);transition:inset .6s}}
 /* עובי הדפים: מחוץ לעמודים, כך שהעמוד והתמונה לא מצטמצמים */
@@ -217,7 +245,10 @@ body{{margin:0;background:var(--desk);color:var(--ink);font-family:var(--body);d
 .toc button:hover{{text-decoration:underline;text-decoration-color:#F2E3A0;text-decoration-thickness:3px}}
 .toc b{{font-family:var(--body);font-weight:400;font-size:.62em;color:var(--ink2);font-variant-numeric:tabular-nums}}
 /* בקרה ופרטיטורה זעירה */
-.ctrl{{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:18px;direction:rtl;font-size:14px;color:var(--ink2);width:min(100%,calc(var(--S)*2))}}
+.ctrl{{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto auto;align-items:center;gap:18px;direction:rtl;font-size:14px;color:var(--ink2);width:min(100%,calc(var(--S)*2))}}
+.ctrl button.sub2{{font:inherit;min-height:34px;padding:0 12px;border:0;border-radius:4px;background:transparent;color:var(--ink2);cursor:pointer}}
+.ctrl button.sub2:hover{{background:var(--paper);color:var(--ink)}}
+.ctrl button.sub2:disabled{{opacity:.35;cursor:default}}
 .ctrl button.nav{{font:inherit;min-width:104px;min-height:38px;border:0;border-radius:4px;background:var(--paper);color:var(--ink);cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.1)}}
 .ctrl button.nav:hover{{background:#fff}}
 .ctrl button.nav:disabled{{opacity:.35;cursor:default}}
@@ -226,9 +257,27 @@ body{{margin:0;background:var(--desk);color:var(--ink);font-family:var(--body);d
 .mini .pos{{font-variant-numeric:tabular-nums}}
 .mini .pos b{{color:var(--ink);font-weight:600}}
 .mini:hover .pos{{color:var(--ink)}}
+.tocover{{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;position:relative;z-index:26;letter-spacing:inherit}}
+.tocover:hover{{color:var(--ink);text-decoration:underline}}
+.rh{{position:relative;z-index:26}}
+.howto{{margin:0;padding-inline-start:1.2em;display:flex;flex-direction:column;gap:calc(var(--S)*.008);font-size:calc(var(--S)*.019);line-height:1.6;color:var(--ink2)}}
+.howto b{{color:var(--ink);font-weight:600}}
+.legend-pg{{background:var(--paper);padding:calc(var(--S)*.07) calc(var(--S)*.08)}}
+.lg-in{{display:flex;flex-direction:column;gap:calc(var(--S)*.016);height:100%}}
+.lg-in h3{{margin:0;font-family:var(--display);font-weight:400;font-size:calc(var(--S)*.026);border-bottom:1px solid var(--line);padding-bottom:4px}}
+.lg-in h3 small{{font-family:var(--body);font-size:.55em;color:var(--ink2);font-weight:400}}
+.serlist{{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:calc(var(--S)*.008) calc(var(--S)*.03)}}
+.serlist li{{display:flex;gap:8px;align-items:flex-start;font-size:calc(var(--S)*.016);line-height:1.35}}
+.serlist li div{{display:flex;flex-direction:column}}
+.serlist b{{font-weight:600}}.serlist span{{color:var(--ink2)}}
+.navkeys{{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;font-size:calc(var(--S)*.016);color:var(--ink2)}}
+kbd{{font-family:var(--body);font-size:.9em;background:#F1EFEA;border-radius:3px;padding:0 5px;color:var(--ink);box-shadow:0 1px 0 #D8D4CC}}
+.k4{{border:2px solid var(--ink);background:transparent}}
 .hit{{position:absolute;top:0;bottom:0;width:50%;z-index:20;background:none;border:0;cursor:pointer}}
 .hit.L{{left:0;cursor:w-resize}}.hit.R{{right:0;cursor:e-resize}}
-.side .mosaic,.side .names,.side .toc,.side .score-pg,.side .pg-cover{{z-index:25}}
+.side .mosaic,.side .names,.side .toc,.side .score-pg,.side .pg-cover,.side .legend-pg{{z-index:25}}
+.legov .sheet{{display:grid;grid-template-columns:1fr 1fr;width:min(100%,1300px);margin-inline:auto;background:var(--paper);--S:min(760px,calc((100vh - 150px)),calc((100vw - 64px)/2))}}
+.legov .sheet>div{{position:relative;min-height:var(--S)}}
 /* מפה במסך מלא */
 .mapov{{position:fixed;inset:0;z-index:60;background:var(--paper);display:grid;grid-template-rows:auto 1fr auto;padding:20px max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px))}}
 .mapov[hidden],[hidden]{{display:none!important}}
@@ -262,7 +311,11 @@ body{{margin:0;background:var(--desk);color:var(--ink);font-family:var(--body);d
   .score-pg .score-wrap{{max-height:100%;overflow:auto}}
   .mapov .score{{min-width:1100px}}
   .mapov .score-wrap{{overflow:auto;max-height:100%}}
-  .ctrl{{gap:8px}}.ctrl button.nav{{min-width:76px}}
+  .ctrl{{gap:6px;grid-template-columns:auto auto minmax(0,1fr) auto auto}}.ctrl button.nav{{min-width:64px}}.ctrl button.sub2{{padding:0 6px;font-size:13px}}
+  .legov .sheet{{grid-template-columns:1fr;--S:calc(100vw - 32px)}}
+  .legend-pg{{position:relative}}
+  .side.L:has(.legend-pg){{height:auto}}
+  .side.L .legend-pg{{position:relative;inset:auto}}.serlist,.navkeys{{grid-template-columns:1fr}}.serlist li,.navkeys,.howto{{font-size:13.5px}}.lg-in h3{{font-size:18px}}
   .book.turn{{animation:turn .45s ease}}
 }}
 @keyframes turn{{0%{{opacity:1;transform:none}}45%{{opacity:0;transform:translateX(var(--dx,-24px))}}55%{{opacity:0;transform:translateX(calc(var(--dx,-24px)*-1))}}100%{{opacity:1;transform:none}}}}
@@ -278,7 +331,9 @@ body{{margin:0;background:var(--desk);color:var(--ink);font-family:var(--body);d
   </div>
   <nav class="ctrl" aria-label="דפדוף">
     <button class="nav" id="prev">הקודם</button>
+    <button class="sub2" id="toCover">לכריכה</button>
     <button class="mini" id="mini" title="פתיחת מפת הספר"><svg id="miniSvg" viewBox="0 0 560 16" preserveAspectRatio="none" aria-hidden="true"></svg><span class="pos" id="pos"></span></button>
+    <button class="sub2" id="legBtn">מקרא</button>
     <button class="nav" id="next">הבא</button>
   </nav>
 </div>
@@ -287,11 +342,16 @@ body{{margin:0;background:var(--desk);color:var(--ink);font-family:var(--body);d
   <div class="score-wrap"><svg class="score" id="bigScore" data-big="1"></svg></div>
   <p id="mapNote"></p>
 </div>
+<div class="mapov legov" id="legov" hidden>
+  <header><div><h2>מקרא</h2><p>איך לקרוא את הספר, את המפה ואת הסימנים.</p></div><button class="close" id="closeLeg">סגירה</button></header>
+  <div class="score-wrap"><div class="sheet" id="legSheet"></div></div>
+  <p></p>
+</div>
 {tpl}
 <script>
 var SD={SDATA};
 (function(){{
-  var T=[].slice.call(document.querySelectorAll('template')), n=T.length, i=0, busy=false;
+  var T=[].slice.call(document.querySelectorAll('template')), n=T.length, i=0, busy=false, pending=null, flying=0, FC={FIRST_CITY}, LEG=FC-1;
   var L=document.getElementById('sideL'), R=document.getElementById('sideR'), book=document.getElementById('book');
   var NS='http://www.w3.org/2000/svg';
   function part(k,side){{return T[k].content.querySelector('.'+side).innerHTML;}}
@@ -337,41 +397,63 @@ var SD={SDATA};
     ui(); mini(); try{{history.replaceState(null,'','#p'+k);}}catch(e){{}}
   }}
   function ui(){{
-    document.getElementById('prev').disabled=i===0; document.getElementById('next').disabled=i===n-1;
+    document.getElementById('prev').disabled=i===0; document.getElementById('next').disabled=i===n-1; document.getElementById('toCover').disabled=i===0;
     var nm=T[i].dataset.name, c=cityAt(i);
-    document.getElementById('pos').innerHTML = c ? '<b>'+nm+'</b> · '+SD.ser[c.s][0]+' '+c.n+' · '+(i-2)+' מתוך '+(n-4) : '<b>'+nm+'</b>';
+    document.getElementById('pos').innerHTML = c ? '<b>'+nm+'</b> · '+SD.ser[c.s][0]+' '+c.n+' · '+(i-FC+1)+' מתוך '+(n-FC-1) : '<b>'+nm+'</b>';
   }}
   var narrow=function(){{return matchMedia('(max-width:820px)').matches;}};
   var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   function go(k){{
-    if(busy||k<0||k>=n||k===i) return;
+    if(k<0||k>=n) return;
+    if(busy){{pending=k;return;}}
+    if(k===i) return;
+    flying=k;
     if(reduce){{show(k);return;}}
-    if(narrow()){{busy=true;book.style.setProperty('--dx',k>i?'-24px':'24px');book.classList.remove('turn');void book.offsetWidth;book.classList.add('turn');setTimeout(function(){{show(k);}},200);setTimeout(function(){{busy=false;}},460);return;}}
-    busy=true; var fwd=k>i, leaf=document.createElement('div');
+    // ספר עברי: קדימה, הישן יוצא ימינה והחדש נכנס משמאל
+    if(narrow()){{busy=true;book.style.setProperty('--dx',k>i?'24px':'-24px');book.classList.remove('turn');void book.offsetWidth;book.classList.add('turn');setTimeout(function(){{show(k);}},200);setTimeout(done,460);return;}}
+    busy=true; var fwd=k>i;
+    // פתיחת הכריכה: קודם הספר נע למרכז, ורק אז הכריכה מתהפכת
+    if(fwd&&i===0&&book.classList.contains('closed')){{book.classList.remove('closed');setTimeout(function(){{flip(k,true);}},440);return;}}
+    flip(k,fwd);
+  }}
+  function base(){{return pending!==null?pending:(busy?flying:i);}}
+  function done(){{busy=false;if(pending!==null){{var t=pending;pending=null;if(t!==i)go(t);}}}}
+  function flip(k,fwd){{
+    var leaf=document.createElement('div');
     leaf.className='leaf '+(fwd?'fwd':'back');
     // קדימה בספר עברי: העמוד השמאלי מתהפך אל הימין. אחורה: העמוד הימני מתהפך אל השמאל.
     leaf.innerHTML='<div class="face f">'+(fwd?part(i,'L'):part(i,'R'))+'</div><div class="face b">'+(fwd?part(k,'R'):part(k,'L'))+'</div>';
     var fs=leaf.querySelector('svg.score'); if(fs) score(fs,false);
     book.appendChild(leaf);
     if(fwd){{L.innerHTML=part(k,'L');var s2=L.querySelector('svg.score');if(s2)score(s2,false);}} else R.innerHTML=part(k,'R');
-    if(fwd&&i===0){{book.classList.remove('closed');}}
     if(!fwd&&k===0){{R.style.visibility='hidden';}}
     requestAnimationFrame(function(){{requestAnimationFrame(function(){{leaf.style.transform='rotateY('+(fwd?180:-180)+'deg)';}});}});
-    setTimeout(function(){{R.style.visibility='';show(k);leaf.remove();busy=false;}},920);
+    setTimeout(function(){{R.style.visibility='';show(k);leaf.remove();done();}},920);
   }}
   var ov=document.getElementById('mapov');
   function openMap(){{score(document.getElementById('bigScore'),true);var inB=SD.cities.filter(function(q){{return q.sp>=0;}}).length,inF=SD.cities.filter(function(q){{return q.f;}}).length;
     document.getElementById('mapNote').textContent=inB+' ערים כבר בספר, '+(inF-inB)+' בקובץ ועוד בלי תמונה, ו-'+(55-inF)+' לא בקובץ.';ov.hidden=false;document.getElementById('closeMap').focus();}}
   function closeMap(){{ov.hidden=true;}}
+  var lov=document.getElementById('legov');
+  function openLeg(){{document.getElementById('legSheet').innerHTML='<div>'+part(LEG,'R')+'</div><div>'+part(LEG,'L')+'</div>';lov.hidden=false;document.getElementById('closeLeg').focus();}}
+  function closeLeg(){{lov.hidden=true;}}
+  document.getElementById('legBtn').onclick=openLeg;
+  document.getElementById('closeLeg').onclick=closeLeg;
+  lov.addEventListener('click',function(ev){{var t=ev.target.closest('[data-to]');if(t){{closeLeg();go(+t.dataset.to);}}}});
+  document.getElementById('toCover').onclick=function(){{go(0);}};
   document.getElementById('mini').onclick=openMap;
   document.getElementById('closeMap').onclick=closeMap;
   ov.addEventListener('click',function(ev){{var t=ev.target.closest('[data-to]');if(t){{closeMap();go(+t.dataset.to);}}}});
-  document.getElementById('next').onclick=function(){{go(i+1);}};
-  document.getElementById('prev').onclick=function(){{go(i-1);}};
-  document.getElementById('hitL').onclick=function(){{go(i+1);}};
-  document.getElementById('hitR').onclick=function(){{go(i-1);}};
+  document.getElementById('next').onclick=function(){{go(base()+1);}};
+  document.getElementById('prev').onclick=function(){{go(base()-1);}};
+  document.getElementById('hitL').onclick=function(){{go(base()+1);}};
+  document.getElementById('hitR').onclick=function(){{go(base()-1);}};
   book.addEventListener('click',function(ev){{var t=ev.target.closest('[data-to]');if(t){{ev.stopPropagation();go(+t.dataset.to);return;}}if(ev.target.closest('.pg-cover')){{ev.stopPropagation();go(1);}}}},true);
-  document.addEventListener('keydown',function(ev){{if(!ov.hidden){{if(ev.key==='Escape')closeMap();return;}}if(ev.key==='ArrowLeft'||ev.key==='PageDown'||ev.key===' ')go(i+1);if(ev.key==='ArrowRight'||ev.key==='PageUp')go(i-1);if(ev.key==='Home')go(0);if(ev.key==='End')go(n-1);if(ev.key==='m'||ev.key==='M')openMap();}});
+  document.addEventListener('keydown',function(ev){{if(!ov.hidden){{if(ev.key==='Escape')closeMap();return;}}if(!lov.hidden){{if(ev.key==='Escape')closeLeg();return;}}
+    // מקש רווח או אנטר על כפתור מפעילים את הכפתור עצמו, ולא דפדוף נוסף
+    if((ev.key===' '||ev.key==='Enter')&&ev.target.closest&&ev.target.closest('button'))return;
+    if(ev.key==='?'){{openLeg();return;}}
+    if(ev.key==='ArrowLeft'||ev.key==='PageDown'||ev.key===' '){{ev.preventDefault();go(base()+1);}}if(ev.key==='ArrowRight'||ev.key==='PageUp'){{ev.preventDefault();go(base()-1);}}if(ev.key==='Home')go(0);if(ev.key==='End')go(n-1);if(ev.key==='m'||ev.key==='M')openMap();}});
   var sx=null;book.addEventListener('touchstart',function(ev){{sx=ev.touches[0].clientX;}},{{passive:true}});
   book.addEventListener('touchend',function(ev){{if(sx===null)return;var dx=ev.changedTouches[0].clientX-sx;if(Math.abs(dx)>40)go(dx>0?i+1:i-1);sx=null;}});
   var m=(location.hash||'').match(/^#p(\\d+)$/); show(m?Math.min(+m[1],n-1):0);
