@@ -1,5 +1,5 @@
 # בונה את "ספר הערים הסמויות": עמוד לכל עיר, תמונה אחת, מתח, תובנה והייקו.
-import base64, json, os, sys, html
+import base64, json, os, sys, html, math
 HERE = os.path.dirname(os.path.abspath(__file__))
 PAGES = [
  dict(id='desp', n='דספינה', cat='ערים והתשוקה', t='ים מול מדבר',
@@ -83,22 +83,24 @@ def glyph(k, size=16, color=None):
 PAGES.sort(key=lambda p: POS[p['n']]['pos'])
 done = {p['n'] for p in PAGES}
 N = len(PAGES)
+CC = max(2, math.ceil(math.sqrt(N)))
+RR = math.ceil(N / CC)
 FIRST_CITY = 4  # 0 כריכה סגורה, 1 שער, 2 פרטיטורה, 3 מקרא
 spreads = []
 # 0: כריכה סגורה. הכריכה בצד שמאל, ובצד ימין שולחן.
 ring = ''.join(f'<span style="--a:{i*360/11}deg">{glyph(k, 22, "#C9B37E")}</span>' for i, k in enumerate(ORDER))
-spreads.append(('', f'''<div class="pg-cover"><div class="ring">{ring}</div>
+spreads.append((f'''<div class="pg-cover"><div class="ring">{ring}</div>
   <div class="ct"><small>איטלו קאלווינו</small><h1>ספר הערים<br>הסמויות</h1><span>{N} ערים · כרך ראשון</span></div>
-  <p class="open">לפתיחה, לחצי על הכריכה</p></div>''', 'כריכה'))
+  <p class="open">לפתיחה, לחצי על הכריכה</p></div>''', '<div class="pg-img endpaper"></div>', 'כריכה'))
 # 1: שער ותוכן
 toc = ''.join(f'<li><button data-to="{FIRST_CITY+k}">{glyph(POS[p["n"]]["s"], 13)}<b>{POS[p["n"]]["pos"]:02d}</b>{e(p["n"])}</button></li>' for k, p in enumerate(PAGES))
-mosaic = ''.join(f'<button data-to="{FIRST_CITY+k}" aria-label="{e(p["n"])}"><img src="{thumb(p["img"])}" alt=""></button>' for k, p in enumerate(PAGES))
+mosaic = ''.join(f'<button class="cell" data-to="{FIRST_CITY+k}" aria-label="{e(p["n"])}"><span class="ph"><img src="{thumb(p["img"])}" alt=""></span><small><b>{k+1:02d}</b>{e(p["n"])}</small></button>' for k, p in enumerate(PAGES))
 spreads.append((f'''<div class="pg-text" style="--c:#2E2E2B">
   <div class="rh"><span>שער</span><span><button class="tocover" data-to="0" title="לכריכה">ספר הערים הסמויות</button></span></div>
   <div class="mid"><h1>ספר הערים הסמויות</h1><p class="sub">כל עיר היא מתח אחד. התמונה מחזיקה אותו, וההייקו משאיר אותו פתוח.</p></div>
   <ol class="toc">{toc}</ol>
   <div class="folio">1</div>
-</div>''', f'<div class="pg-img mosaic n{min(N,9)}">{mosaic}</div>', 'שער'))
+</div>''', f'<div class="pg-img contact" style="--cols:{CC};--rows:{RR}"><div class="grid">{mosaic}</div></div>', 'שער'))
 # 2: הפרטיטורה
 legend = ''.join(f'<li>{glyph(k,14)}<span>{SER[k][0]}</span></li>' for k in ORDER)
 spreads.append((f'''<div class="pg-text" style="--c:#2E2E2B">
@@ -179,31 +181,27 @@ body{{margin:0;background:var(--desk);color:var(--ink);font-family:var(--body);d
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}}
 .stage{{height:100%;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:1fr auto;place-items:center;gap:14px;padding-block:22px 16px}}
 .book{{position:relative;width:calc(var(--S)*2);height:var(--S);perspective:calc(var(--S)*5);direction:ltr;--tl:8px;--tr:2px;transition:transform .42s cubic-bezier(.45,.05,.25,1)}}
-.book.closed{{transform:translateX(calc(var(--S)/2))}}
+.book.closed{{transform:translateX(calc(var(--S)/-2))}}
 .book::before{{content:"";position:absolute;inset:-10px calc(-12px - var(--tr)) -10px calc(-12px - var(--tl));border-radius:6px;background:#D8D4CC;box-shadow:0 40px 80px rgba(40,34,24,.25);transition:inset .6s}}
 /* עובי הדפים: מחוץ לעמודים, כך שהעמוד והתמונה לא מצטמצמים */
 .stack{{position:absolute;top:3px;bottom:3px;background:repeating-linear-gradient(90deg,#F4F1EA 0 1px,#D9D4CA 1px 2px);transition:width .6s}}
 .stack.L{{right:100%;width:var(--tl);border-radius:3px 0 0 3px}}
 .stack.R{{left:100%;width:var(--tr);border-radius:0 3px 3px 0}}
-.book.closed::before{{inset:-10px calc(50% - 4px) -10px calc(-12px - var(--tl))}}
-.book.closed .stack.R{{display:none}}
+.book.closed::before{{inset:-10px -12px -10px calc(50% - 2px)}}
+.book.closed .stack{{display:none}}
 .side{{position:absolute;top:0;width:var(--S);height:var(--S);background:var(--paper);overflow:hidden}}
 .side.L{{left:0;border-radius:3px 0 0 3px}}
 .side.R{{right:0;border-radius:0 3px 3px 0}}
-.book.closed .side.R{{visibility:hidden}}
+.book.closed .side.L{{visibility:hidden}}
 .side.L::after,.side.R::after,.face::after{{content:"";position:absolute;top:0;bottom:0;width:14%;pointer-events:none;z-index:3}}
 .side.L::after{{right:0;background:linear-gradient(to left,rgba(40,32,20,.22),rgba(40,32,20,0))}}
 .side.R::after{{left:0;background:linear-gradient(to right,rgba(40,32,20,.16),rgba(40,32,20,0))}}
-.book.closed .side.L::after{{background:linear-gradient(to left,rgba(0,0,0,.35),rgba(0,0,0,0) 30%);width:6%}}
 .leaf{{position:absolute;top:0;width:var(--S);height:var(--S);transform-style:preserve-3d;z-index:10;transition:transform .9s cubic-bezier(.45,.05,.25,1)}}
-.leaf.fwd{{left:0;transform-origin:right center}}
-.leaf.back{{right:0;transform-origin:left center}}
-.face{{position:absolute;inset:0;backface-visibility:hidden;background:var(--paper);overflow:hidden}}
+.leaf.fwd{{right:0;transform-origin:left center}}
+.leaf.back{{left:0;transform-origin:right center}}
+.face{{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--paper);overflow:hidden}}
 .face.b{{transform:rotateY(180deg)}}
-.leaf.fwd .face.f::after{{right:0;background:linear-gradient(to left,rgba(40,32,20,.22),rgba(40,32,20,0))}}
-.leaf.fwd .face.b::after{{left:0;background:linear-gradient(to right,rgba(40,32,20,.16),rgba(40,32,20,0))}}
-.leaf.back .face.f::after{{left:0;background:linear-gradient(to right,rgba(40,32,20,.16),rgba(40,32,20,0))}}
-.leaf.back .face.b::after{{right:0;background:linear-gradient(to left,rgba(40,32,20,.22),rgba(40,32,20,0))}}
+.endpaper{{background:#EEE8DC;box-shadow:inset 0 0 0 calc(var(--S)*.03) #E3DBCB}}
 /* כריכה */
 .pg-cover{{position:absolute;inset:0;direction:rtl;background:radial-gradient(120% 90% at 30% 20%,#2C3746,var(--board) 60%,#151B24);color:var(--gold);display:grid;place-items:center;cursor:pointer}}
 .pg-cover::before{{content:"";position:absolute;inset:calc(var(--S)*.045);border:1px solid rgba(201,179,126,.35)}}
@@ -217,12 +215,15 @@ body{{margin:0;background:var(--desk);color:var(--ink);font-family:var(--body);d
 /* עמוד תמונה */
 .pg-img{{position:absolute;inset:0;direction:rtl}}
 .pg-img>img{{width:100%;height:100%;object-fit:cover;display:block}}
-.mosaic{{display:grid;gap:4px;padding:calc(var(--S)*.06);background:var(--paper);align-content:center}}
-.mosaic.n9,.mosaic.n8,.mosaic.n7,.mosaic.n6,.mosaic.n5{{grid-template-columns:repeat(3,1fr)}}
-.mosaic.n4,.mosaic.n3,.mosaic.n2,.mosaic.n1{{grid-template-columns:repeat(2,1fr)}}
-.mosaic button{{padding:0;border:0;cursor:pointer;overflow:hidden;aspect-ratio:1/1;background:#ddd}}
-.mosaic img{{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s}}
-.mosaic button:hover img{{transform:scale(1.05)}}
+.contact{{background:var(--paper);display:flex;flex-direction:column;direction:rtl;padding:calc(var(--S)*.07) calc(var(--S)*.07) calc(var(--S)*.06) calc(var(--S)*.08)}}
+.contact .grid{{flex:1;min-height:0;display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));grid-template-rows:repeat(var(--rows),minmax(0,1fr));gap:calc(var(--S)*.022) calc(var(--S)*.018)}}
+.cell{{min-width:0;min-height:0;display:flex;flex-direction:column;background:none;border:0;padding:0;cursor:pointer;font:inherit;color:var(--ink);text-align:right}}
+.cell .ph{{flex:1;min-height:0;overflow:hidden;background:#DCD8CF;box-shadow:0 1px 2px rgba(40,32,20,.12)}}
+.cell img{{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s}}
+.cell:hover img{{transform:scale(1.04)}}
+.cell small{{flex:none;display:block;font-size:calc(var(--S)*.016);color:var(--ink2);padding-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+.cell small b{{font-weight:400;color:var(--ink);font-variant-numeric:tabular-nums;margin-inline-end:6px}}
+.cell:focus-visible{{outline:2px solid var(--ink);outline-offset:3px}}
 .names{{display:grid;place-items:center;padding:calc(var(--S)*.09);background:var(--paper)}}
 .all{{display:flex;flex-wrap:wrap;justify-content:center;gap:calc(var(--S)*.012) calc(var(--S)*.024);font-family:var(--display);font-size:calc(var(--S)*.024)}}
 .all span{{color:#C8C4BB}}
@@ -290,7 +291,7 @@ kbd{{font-family:var(--body);font-size:.9em;background:#F1EFEA;border-radius:3px
 .k4{{border:2px solid var(--ink);background:transparent}}
 .hit{{position:absolute;top:0;bottom:0;width:50%;z-index:20;background:none;border:0;cursor:pointer}}
 .hit.L{{left:0;cursor:w-resize}}.hit.R{{right:0;cursor:e-resize}}
-.side .mosaic,.side .names,.side .toc,.side .score-pg,.side .pg-cover,.side .legend-pg{{z-index:25}}
+.side .contact,.side .names,.side .toc,.side .score-pg,.side .pg-cover,.side .legend-pg{{z-index:25}}
 .legov .sheet{{display:grid;grid-template-columns:1fr 1fr;width:min(100%,1300px);margin-inline:auto;background:var(--paper);--S:min(760px,calc((100vh - 150px)),calc((100vw - 64px)/2))}}
 .legov .sheet>div{{position:relative;min-height:var(--S)}}
 /* מפה במסך מלא */
@@ -313,7 +314,13 @@ kbd{{font-family:var(--body);font-size:.9em;background:#F1EFEA;border-radius:3px
   .side.L::after,.side.R::after{{display:none}}
   .book.closed::before{{inset:-5px}}
   .book.closed{{transform:none}}
-  .book.closed .side.R{{display:none}}
+  .book.closed .side.L{{display:none}}
+  .book.closed .side.R{{display:block}}
+  .contact .grid{{grid-template-rows:none;grid-auto-rows:auto}}
+  .cell .ph{{flex:none;aspect-ratio:1/1}}
+  .cell small{{font-size:11.5px;padding-top:6px}}
+  .contact{{padding:22px 20px 26px}}
+  .contact .grid{{gap:16px 12px}}
   .pg-text{{position:relative;inset:auto;min-height:var(--S);padding:22px 20px 44px;gap:0}}
   .rh{{font-size:12px}}.tension .lbl{{font-size:11px}}.folio{{font-size:12px;bottom:14px}}
   .pg-text h1{{font-size:38px}}.pg-text h2{{font-size:40px}}
@@ -434,17 +441,22 @@ var SD={SDATA};
   }}
   function base(){{return pending!==null?pending:(busy?flying:i);}}
   function done(){{busy=false;if(pending!==null){{var t=pending;pending=null;if(t!==i)go(t);}}}}
+  function hyd(el){{el.querySelectorAll('svg.score').forEach(function(x){{score(x,false);}});}}
   function flip(k,fwd){{
     var leaf=document.createElement('div');
     leaf.className='leaf '+(fwd?'fwd':'back');
-    // קדימה בספר עברי: העמוד השמאלי מתהפך אל הימין. אחורה: העמוד הימני מתהפך אל השמאל.
-    leaf.innerHTML='<div class="face f">'+(fwd?part(i,'L'):part(i,'R'))+'</div><div class="face b">'+(fwd?part(k,'R'):part(k,'L'))+'</div>';
-    var fs=leaf.querySelector('svg.score'); if(fs) score(fs,false);
-    book.appendChild(leaf);
-    if(fwd){{L.innerHTML=part(k,'L');var s2=L.querySelector('svg.score');if(s2)score(s2,false);}} else R.innerHTML=part(k,'R');
-    if(!fwd&&k===0){{R.style.visibility='hidden';}}
-    requestAnimationFrame(function(){{requestAnimationFrame(function(){{leaf.style.transform='rotateY('+(fwd?180:-180)+'deg)';}});}});
-    setTimeout(function(){{R.style.visibility='';show(k);leaf.remove();done();}},920);
+    // ספר עברי. קדימה: העמוד הימני (טקסט) נהפך אל השמאל, וגבו הוא הוויזואל של העמוד הבא.
+    // אחורה: העמוד השמאלי (ויזואל) נהפך אל הימין, וגבו הוא הטקסט של העמוד הקודם.
+    if(fwd){{
+      leaf.innerHTML='<div class="face f">'+part(i,'R')+'</div><div class="face b">'+part(k,'L')+'</div>';
+      R.innerHTML=part(k,'R');
+    }} else {{
+      leaf.innerHTML='<div class="face f">'+part(i,'L')+'</div><div class="face b">'+part(k,'R')+'</div>';
+      L.innerHTML=part(k,'L');
+    }}
+    book.appendChild(leaf); hyd(leaf); hyd(L); hyd(R);
+    requestAnimationFrame(function(){{requestAnimationFrame(function(){{leaf.style.transform='rotateY('+(fwd?-180:180)+'deg)';}});}});
+    setTimeout(function(){{show(k);leaf.remove();done();}},940);
   }}
   var ov=document.getElementById('mapov');
   function openMap(){{score(document.getElementById('bigScore'),true);var inB=SD.cities.filter(function(q){{return q.sp>=0;}}).length,inF=SD.cities.filter(function(q){{return q.f;}}).length;
